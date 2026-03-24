@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  myDB19:
+    image: postgres:15
+    container_name: odoo19-db
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      # AQUÍ TUS DATOS DE DB
+      POSTGRES_USER: chrizzzadmin
+      POSTGRES_PASSWORD: "051002"
+      POSTGRES_DB: postgres
+    volumes:
+      - ./postgres19_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U chrizzzadmin -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  odoo:
+    image: odoo:19.0
+    container_name: odoo19-server
+    restart: always
+    depends_on:
+      myDB19:
+        condition: service_healthy
+    environment:
+      - HOST=myDB19
+      - USER=chrizzzadmin
+      - PASSWORD=051002
+    # El comando ahora refleja exactamente lo que hacías en local
+    command: >
+      odoo -d odoo-19-db
+    # --db_user=chrizzzadmin  --db_password=051002  --db_host=myDB --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+    ports:
+      - "8070:8069"
+    volumes:
+      - ./addons_custom:/mnt/extra-addons
+      - ../Odoo-priv:/mnt/odoo-priv
+      - ../tutorials:/mnt/tutorials
+      - ../config/odoo.conf:/etc/odoo/odoo.conf
+      - ./odoo_data:/var/lib/odoo
+
+  pdAdmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4-v19
+    restart: always
+    depends_on:
+      - myDB19
+    ports:
+      - "8082:80"
+    environment:
+      # Estos son solo para entrar al panel web de pgAdmin
+      PGADMIN_DEFAULT_EMAIL: pierovallezapata01@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: "051002"
+    volumes:
+      - ./pgadmin19_data:/var/lib/pgadmin
