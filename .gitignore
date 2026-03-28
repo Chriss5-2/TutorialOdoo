@@ -52,9 +52,11 @@ package.json
 /share/
 /src/
 
-Odoo-19_Docker/odoo_data
-Odoo-19_Docker/addons_custom
-Odoo-19_Docker/pgadmin19_data
-Odoo-19_Docker/postgres19_data
+odoo_data/
+addons_custom/
+pgadmin19_data/
+postgres19_data/
+Odoo-test/
 
 Odoo-priv
+venv/
