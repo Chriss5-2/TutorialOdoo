@@ -34,6 +34,7 @@
 
     <menuitem id="menu_settings" name="Settings" parent="estate_menu_root">
         <menuitem id="menu_property_types" name="Property Types" action="property_types_action"/>
+        <menuitem id="menu_property_tags" name="Property Tags" action="property_tags_action"/>
     </menuitem>
 
 </odoo>

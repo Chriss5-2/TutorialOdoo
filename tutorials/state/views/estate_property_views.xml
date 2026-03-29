@@ -19,6 +19,7 @@
                 <field name="num_bedrooms"/>
                 <field name="availability_date"/>
                 <field name="property_type_id"/>
+                <field name="tag_ids" widget="many2many_tags"/>
             </list>
         </field>
     </record>
@@ -35,6 +36,9 @@
                             <field name="num_bedrooms"/>
                             <field name="num_months"/>
                             <field name="availability_date"/>
+                        </group>
+                        <group>
+                            <field name="tag_ids" widget="many2many_tags"/>
                         </group>
                         <group>
                             <field name="expected_price"/>
@@ -55,6 +59,15 @@
                                 <field name="buyer_id"/>
                                 <field name="salesperson_id"/>
                             </group>
+                        </page>
+                        <page string="Offers">
+                            <field name="offer_ids">
+                                <list>
+                                    <field name="price"/>
+                                    <field name="partner_id"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
