@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from odoo import fields, models, api
+from odoo.exceptions import UserError
 
 class EstatePropertyOffer(models.Model):
     _name = "estate.property.offer"
@@ -9,7 +10,7 @@ class EstatePropertyOffer(models.Model):
     status = fields.Selection([
         ('accepted', 'Accepted'),
         ('refused', 'Refused'),
-    ], string='Status', default='accepted', copy=False)
+    ], string='Status', copy=False)
     partner_id = fields.Many2one('res.partner', string='Partner', required=True)
     property_id = fields.Many2one('estate.property', string='Property', required=True)
 
@@ -29,3 +30,25 @@ class EstatePropertyOffer(models.Model):
                 continue
             base_date = fields.Date.to_date(offer.create_date) if offer.create_date else fields.Date.context_today(offer)
             offer.validity = (offer.date_deadline - base_date).days
+
+    def action_accept(self):
+        for offer in self:
+            accepted_offer = self.search([
+                ('property_id', '=', offer.property_id.id),
+                ('status', '=', 'accepted'),
+                ('id', '!=', offer.id),
+            ], limit=1)
+
+            if accepted_offer:
+                raise UserError('Only one offer can be accepted for a property.')
+
+            offer.status = 'accepted'
+            offer.property_id.buyer_id = offer.partner_id
+            offer.property_id.selling_price = offer.price
+            offer.property_id.state = 'offer_accepted'
+        return True
+
+    def action_refuse(self):
+        for offer in self:
+            offer.status = 'refused'
+        return True

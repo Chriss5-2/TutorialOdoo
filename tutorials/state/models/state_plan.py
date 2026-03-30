@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from odoo import fields, models
 from odoo import api
+from odoo.exceptions import UserError
 
 class StatePlan(models.Model):
     _name='estate.property'
@@ -78,3 +79,17 @@ class StatePlan(models.Model):
         else:
             self.garden_area = 0.0
             self.orientation = False
+
+    def action_set_sold(self):
+        for record in self:
+            if record.state == 'cancelled':
+                raise UserError('A cancelled property cannot be set as sold.')
+            record.state = 'sold'
+        return True
+
+    def action_set_cancelled(self):
+        for record in self:
+            if record.state == 'sold':
+                raise UserError('A sold property cannot be cancelled.')
+            record.state = 'cancelled'
+        return True
