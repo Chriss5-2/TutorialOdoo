@@ -19,7 +19,7 @@
                 <field name="num_bedrooms"/>
                 <field name="availability_date"/>
                 <field name="property_type_id"/>
-                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                 <field name="living_area"/>
                 <field name="garden_area"/>
                 <field name="total_area"/>
@@ -51,7 +51,7 @@
                             <field name="availability_date"/>
                         </group>
                         <group>
-                            <field name="tag_ids" widget="many2many_tags"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                         </group>
                         <group>
                             <field name="expected_price"/>
@@ -65,7 +65,7 @@
                         <group>
                             
                             <field name="active"/>
-                            <field name="property_type_id"/>
+                            <field name="property_type_id" options="{'no_create': True, 'no_create_edit': True}"/>
                         </group>
                         <group>
                             <field name="garden"/>
