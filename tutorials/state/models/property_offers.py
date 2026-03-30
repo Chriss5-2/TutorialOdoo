@@ -5,6 +5,7 @@ from odoo.exceptions import UserError
 class EstatePropertyOffer(models.Model):
     _name = "estate.property.offer"
     _description = "Estate Property Offer"
+    _order = 'price desc'
 
     _check_price = models.Constraint(
         'CHECK(price > 0)',
@@ -38,6 +39,9 @@ class EstatePropertyOffer(models.Model):
 
     def action_accept(self):
         for offer in self:
+            if offer.property_id.state in ('cancelled', 'sold'):
+                raise UserError('You cannot accept an offer for a cancelled or sold property.')
+
             accepted_offer = self.search([
                 ('property_id', '=', offer.property_id.id),
                 ('status', '=', 'accepted'),
@@ -55,5 +59,7 @@ class EstatePropertyOffer(models.Model):
 
     def action_refuse(self):
         for offer in self:
+            if offer.property_id.state in ('cancelled', 'sold'):
+                raise UserError('You cannot refuse an offer for a cancelled or sold property.')
             offer.status = 'refused'
         return True

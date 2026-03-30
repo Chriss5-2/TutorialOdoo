@@ -7,6 +7,7 @@ from odoo.tools.float_utils import float_compare, float_is_zero
 class StatePlan(models.Model):
     _name='estate.property'
     _description='State Plan'
+    _order = 'id desc'
 
     name = fields.Char(string='Name', required=True)
     num_months = fields.Integer(string='Number of Months', required=True, default=3)
