@@ -34,8 +34,8 @@
         <field name="arch" type="xml">
             <form string="Form Real Estate">
                 <header>
-                    <button name="action_set_sold" type="object" string="Sold"/>
-                    <button name="action_set_cancelled" type="object" string="Cancelled"/>
+                    <button name="action_set_sold" type="object" string="Sold" invisible="state in ['cancelled', 'sold']"/>
+                    <button name="action_set_cancelled" type="object" string="Cancelled" invisible="state in ['sold', 'cancelled']"/>
                     <field name="state" widget="statusbar" statusbar_visible="new,offer_received,offer_accepted,sold,cancelled"/>
                 </header>
                 <sheet>
@@ -89,8 +89,8 @@
                                 <list>
                                     <field name="price"/>
                                     <field name="partner_id"/>
-                                    <button name="action_accept" type="object" string="Accept" icon="fa-check"/>
-                                    <button name="action_refuse" type="object" string="Refuse" icon="fa-close"/>
+                                    <button name="action_accept" type="object" string="Accept" icon="fa-check" invisible="status in ['accepted', 'refused'] or property_id.state in ['sold', 'cancelled']"/>
+                                    <button name="action_refuse" type="object" string="Refuse" icon="fa-close" invisible="status in ['accepted', 'refused'] or property_id.state in ['sold', 'cancelled']"/>
                                     <field name="status"/>
                                     <field name="validity"/>
                                     <field name="date_deadline"/>
