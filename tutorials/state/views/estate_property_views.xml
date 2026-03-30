@@ -6,22 +6,28 @@
         <field name="name">Properties</field>
         <field name="res_model">estate.property</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_available': 1}</field>
     </record>
 
     <record id="estate_property_views_list" model="ir.ui.view">
         <field name="name">estate.property.list</field>
         <field name="model">estate.property</field>
         <field name="arch" type="xml">
-            <list string="Real Estate List">
+                        <list string="Real Estate List"
+                                    decoration-success="state in ['offer_received', 'offer_accepted']"
+                                    decoration-bf="state == 'offer_accepted'"
+                                    decoration-muted="state == 'sold'"
+                                    decoration-danger="state == 'cancelled'">
                 <field name="name"/>
                 <field name="expected_price"/>
                 <field name="selling_price"/>
                 <field name="num_bedrooms"/>
-                <field name="availability_date"/>
+                <field name="availability_date" optional="hide"/>
+                                <field name="state" invisible="1"/>
                 <field name="property_type_id"/>
                 <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                 <field name="living_area"/>
-                <field name="garden_area"/>
+                <field name="garden_area" invisible="not garden"/>
                 <field name="total_area"/>
                 <field name="best_price"/>
             </list>
@@ -69,8 +75,8 @@
                         </group>
                         <group>
                             <field name="garden"/>
-                            <field name="garden_area"/>
-                            <field name="orientation"/>
+                            <field name="garden_area" invisible="not garden"/>
+                            <field name="orientation" invisible="not garden"/>
 
                         </group>
                     </group>
@@ -85,7 +91,7 @@
                             </group>
                         </page>
                         <page string="Offers">
-                            <field name="offer_ids">
+                            <field name="offer_ids" readonly="state in ['offer_accepted', 'sold', 'cancelled']">
                                 <list>
                                     <field name="price"/>
                                     <field name="partner_id"/>
@@ -112,6 +118,7 @@
                 <field name="expected_price"/>
                 <field name="selling_price"/>
                 <field name="num_bedrooms"/>
+                <field name="living_area" filter_domain="[('living_area', '>=', self)]"/>
                 <field name="property_type_id"/>
                 <field name="state"/>
                 <field name="availability_date"/>
@@ -119,6 +126,7 @@
                 <field name="buyer_id"/>
                 <field name="salesperson_id"/>
 
+                <filter string="Available" name="filter_available" domain="[('state', 'not in', ['sold', 'cancelled'])]"/>
                 <filter string="New" name="filter_new" domain="[('state', '=', 'new')]"/>
                 <filter string="Sold" name="filter_sold" domain="[('state', '=', 'sold')]"/>
                 <filter string="Offer Received" name="filter_offer_received" domain="[('state', '=', 'offer_received')]"/>
