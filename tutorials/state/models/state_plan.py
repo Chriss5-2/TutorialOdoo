@@ -96,6 +96,14 @@ class StatePlan(models.Model):
             record.state = 'cancelled'
         return True
 
+    # Se ejecuta al eliminar un registro
+    # Si el estado del registro no es 'new' o 'cancelled', se lanza una excepción para impedir la eliminación del registro
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_new_or_cancelled(self):
+        for record in self:
+            if record.state not in ('new', 'cancelled'):
+                raise UserError('Only properties in New or Cancelled state can be deleted.')
+
     _check_expected_price = models.Constraint(
         'CHECK(expected_price > 0)',
         'Expected price must be positive.'
