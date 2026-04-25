@@ -8,7 +8,7 @@ class InheritedModel(models.Model):
             self.env["account.move"].create(
             {
                 "partner_id": property_record.buyer_id.id,
-                "move_type": "out_invoice",
+                "move_type": "out_invo ice",
                 "invoice_line_ids": [
                     Command.create({
                         "name": f"Comision venta: {property_record.name}",
