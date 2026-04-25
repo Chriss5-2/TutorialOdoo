@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="prod_menu" name="Producción" parent="production_menu_root" action="base.action_partner_form"/>
+        <menuitem id="prod_reporteriaParadas_menu" name="Reporteria Paradas" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_reportes_menu" name="Reportes" parent="prod_menu" action="base.action_partner_form"/>
+            <menuitem id="prod_rep_prodJarabes_menu" name="XXX Produccion de Jarabes" parent="prod_reportes_menu" action="base.action_partner_form"/>
+            <menuitem id="prod_rep_insumos_menu" name="Insumos" parent="prod_reportes_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_consultas_menu" name="Consultas" parent="prod_menu" action="base.action_partner_form"/>
+            <menuitem id="prod_cons_proCuarentena_menu" name="Productos en Cuarentena" parent="prod_consultas_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_codigoBarras_menu" name="Codigo de Barras" parent="prod_menu" action="base.action_partner_form"/>
+            <!-- No se usa
+            <menuitem id="prod_codBar_XADIS_menu" name="XADIS" parent="prod_codigoBarras_menu" action="base.action_partner_form"/>
+            -->
+
+
+
+
+    <!-- No se usa
+        <menuitem id="prod_codigoBarrasCO_menu" name="Codigo de Barras (CO)" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_reporteriaMermas_menu" name="Reporteria Mermas" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_lanzOrdProd_menu" name="Lanzar Orden de Produccion" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_liqOrdProd_menu" name="Liquidar Orden de Produccion" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_procesoFab_menu" name="Proceso de Fabricacion" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_ingParMermas_menu" name="Ingreso de Paradas y Merma" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_prodVSparad_menu" name="Resumen Produccion vs Paradas" parent="prod_menu" action="base.action_partner_form"/>
+        
+        <menuitem id="prod_ingValorHrsDir_menu" name="Ingreso de Valor de Horas Directas" parent="prod_menu" action="base.action_partner_form"/>
+
+        <menuitem id="prod_tiemposProduccion_menu" name="Tiempos de Producción" parent="prod_menu" action="base.action_partner_form"/>
+
+    -->
+</odoo>

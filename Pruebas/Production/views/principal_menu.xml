@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="production_menu_root" name="Production Module"/>
+    </data>
+</odoo>

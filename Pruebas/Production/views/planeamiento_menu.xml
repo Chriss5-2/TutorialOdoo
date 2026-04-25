@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="plan_menu" name="Planeamiento" parent="production_menu_root" action="base.action_partner_form"/>
+        <menuitem id="plan_mantenimiento_menu" name="Mantenimiento" parent="plan_menu" action="base.action_partner_form"/>
+            <menuitem id="plan_mant_avail_menu" name="AVAIL" parent="plan_mantenimiento_menu" action="base.action_partner_form"/>        
+</odoo>

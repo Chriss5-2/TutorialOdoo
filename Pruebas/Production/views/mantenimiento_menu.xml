@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="mant_menu" name="Mantenimiento" parent="production_menu_root" action="base.action_partner_form"/>
+        <menuitem id="mant_clasificadores_menu" name="Clasificadores" parent="mant_menu" action="base.action_partner_form"/>
+        <menuitem id="mant_configuraciones_menu" name="Configuraciones" parent="mant_menu" action="base.action_partner_form"/>
+            <menuitem id="mant_conf_codigoBarras_menu" name="Código de Barras" parent="mant_configuraciones_menu" action="base.action_partner_form"/>
+        <menuitem id="mant_consultas_menu" name="Consultas" parent="mant_menu" action="base.action_partner_form"/>
+        <menuitem id="mant_reportes_menu" name="Reportes" parent="mant_menu" action="base.action_partner_form"/>
+</odoo>

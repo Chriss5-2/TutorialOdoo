@@ -41,6 +41,7 @@ services:
       - ./addons_custom:/mnt/extra-addons
       - ../Odoo-priv:/mnt/odoo-priv
       - ../tutorials:/mnt/tutorials
+      - ../Pruebas:/mnt/Pruebas
       - ../config/odoo.conf:/etc/odoo/odoo.conf
       - ./odoo_data:/var/lib/odoo
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="cost_menu" name="Costos" parent="production_menu_root" action="base.action_partner_form"/>
+        <menuitem id="cost_mantenimiento_menu" name="Mantenimiento" parent="cost_menu" action="base.action_partner_form"/>
+
+        <menuitem id="cost_estimados_menu" name="Costos Estimados" parent="cost_menu" action="base.action_partner_form"/>
+
+        <menuitem id="cost_reportes_menu" name="Reportes" parent="cost_menu" action="base.action_partner_form"/>
+
+        <menuitem id="cost_costEstandar_menu" name="Costo Estandar" parent="cost_menu" action="base.action_partner_form"/>
+            <menuitem id="cost_cosEs_tablas_menu" name="Tablas" parent="cost_costEstandar_menu" action="base.action_partner_form"/>
+
+        <menuitem id="cost_costSemiVariable_menu" name="Costo SemiVariable" parent="cost_menu" action="base.action_partner_form"/>
+            <menuitem id="cost_costSeVa_varPoduccion_menu" name="Variables de Produccion" parent="cost_costSemiVariable_menu" action="base.action_partner_form"/>
+        
+        <menuitem id="cost_dolarizacion_menu" name="Dolarización" parent="cost_menu" action="base.action_partner_form"/>
+</odoo>
