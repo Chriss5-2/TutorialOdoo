@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- TODO: reemplazar por action="action_aje_familia_produccion"-->
+    <menuitem   id="menu_familia_produccion"
+                name="Familia de Produccion"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="10"/>
+    <menuitem   id="menu_configura_procesos"
+                name="Configura Procesos Productivos"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="20"/>
+    <menuitem   id="menu_motivos_anulacion"
+                name="Motivos de Anulacion OP"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="30"/>
+    <menuitem   id="menu_asigna_personas"
+                name="Asigna Personas a Areas Mant"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="40"/>
+    <menuitem   id="menu_conf_almacenes"
+                name="Conf Almacenes en Procesos"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="50"/>
+    <menuitem   id="menu_conf_sku_maquila"
+                name="Configuracion SKU-Maquila"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="60"/>
+    <menuitem   id="menu_motivo_uso_sustituto"
+                name="Motivos de uso sustituto"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="70"/>
+    <menuitem   id="menu_tarifa_soplados"
+                name="Tarifa de soplado"
+                parent="mant_configuraciones_menu"
+                action="base.action_partner_form"
+                sequence="80"/>
+</odoo>

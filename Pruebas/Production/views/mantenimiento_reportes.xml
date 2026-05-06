@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- TODO: reemplazar por action="action_aje_productos_terminados_materiales" -->
+    <menuitem   id="menu_productos_terminados_materiales"
+                name="Productos terminados vs Materiales"
+                parent="mant_reportes_menu"
+                action="base.action_partner_form"
+                sequence="10"/>
+    <menuitem   id="menu_materiales_productos_terminados"
+                name="Materiales vs Productos Terminados"
+                parent="mant_reportes_menu"
+                action="base.action_partner_form"
+                sequence="20"/>
+</odoo>
