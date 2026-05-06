@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <menuitem id="mant_menu" name="Mantenimiento" parent="production_menu_root" action="base.action_partner_form"/>
-        <menuitem id="mant_clasificadores_menu" name="Clasificadores" parent="mant_menu" action="base.action_partner_form"/>
-        <menuitem id="mant_configuraciones_menu" name="Configuraciones" parent="mant_menu" action="base.action_partner_form"/>
-            <menuitem id="mant_conf_codigoBarras_menu" name="Código de Barras" parent="mant_configuraciones_menu" action="base.action_partner_form"/>
-        <menuitem id="mant_consultas_menu" name="Consultas" parent="mant_menu" action="base.action_partner_form"/>
-        <menuitem id="mant_reportes_menu" name="Reportes" parent="mant_menu" action="base.action_partner_form"/>
+    <menuitem   id="mant_menu" 
+                name="Mantenimiento" 
+                parent="production_menu_root"
+                sequence="10"/>
+        <menuitem   id="mant_clasificadores_menu" 
+                    name="Clasificadores" 
+                    parent="mant_menu"
+                    sequence="10"/>
+        <menuitem   id="mant_configuraciones_menu" 
+                    name="Configuraciones" 
+                    parent="mant_menu"
+                    sequence="20"/>
+            <menuitem   id="mant_conf_codigoBarras_menu" 
+                        name="Código de Barras" 
+                        parent="mant_configuraciones_menu"
+                        sequence="100"/>
+        <menuitem   id="mant_consultas_menu" 
+                    name="Consultas" 
+                    parent="mant_menu"
+                    sequence="30"/>
+        <menuitem   id="mant_reportes_menu" 
+                    name="Reportes" 
+                    parent="mant_menu"
+                    sequence="40"/>
+        <menuitem   id="mant_aprobacion_formulas_menu"
+                        name="Aprobacion de Formulas"
+                        parent="mant_menu"
+                        action="base.action_partner_form"
+                        sequence="50"/>
 </odoo>

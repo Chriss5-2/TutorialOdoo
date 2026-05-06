@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem   id="menu_fecha_vencimiento_articulos"
+                name="Fecha de Vencimiento de Articulos"
+                parent="mant_consultas_menu"
+                action="base.action_partner_form"
+                sequence="10"/>
+    <menuitem   id="menu_maestro_articulos"
+                name="Maestro de Articulos"
+                parent="mant_consultas_menu"
+                action="base.action_partner_form"
+                sequence="20"/>
+</odoo>

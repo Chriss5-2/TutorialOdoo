@@ -109,3 +109,9 @@ Traduce lo anterior a terminos financieros
 Para corregir errores
 - Que hace: Son funciones administrativas para ajustar el sistema cuando algo sale mal en el dia a dia.
 - En Mexico: Se usa para cambiar "Cambiar de Fecha OP" y corregir "Movimiento de Almacen"
+
+## Implementacion menu Mantenimiento
+En **mantenimiento_menu.xml** se establecen los contenedores o secciones principales.Se han ajustado las secuencias(sequence) para que los grupos aparezcan en el orden visual correcto.
+
+Y los otros archivos con el prefijo **mantenimiento_ ...** de acuerdo al arbol equivalente al excel proporcionado por los lideres de equipo.
+
