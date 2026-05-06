@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <!-- TODO: Reemplazar por action="action_aje_turnos" -->
+    <menuitem   id="menu_mantenimiento_turnos"
+                name="Turnos"
+                parent="mant_clasificadores_menu"
+                action="base.action_partner_form"
+                sequence="10"/>
+    <!-- TODO: Reemplazar por action="action_aje_paradas" -->
+    <menuitem   id="menu_mantenimiento_paradas"
+                name="Paradas"
+                parent="mant_clasificadores_menu"
+                action="base.action_partner_form"
+                sequence="20"/>
+    <!-- TODO: Reemplazar por action="action_aje_mermas"-->
+    <menuitem   id="menu_mantenimiento_mermas"
+                name="Mermas"
+                parent="mant_clasificadores_menu"
+                action="base.action_partner_form"
+                sequence="30"/>
+    <!-- TODO: Reemplazar por action="action_aje_categoria_linea"-->
+    <menuitem   id="menu_mantenimiento_categorias_linea"
+                name="Categorias de Lineas de Produccion"
+                parent="mant_clasificadores_menu"
+                action="base.action_partner_form"
+                sequence="40"/>
+</odoo>
