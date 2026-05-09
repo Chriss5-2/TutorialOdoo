@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <menuitem id="cost_menu" name="Costos" parent="production_menu_root" action="base.action_partner_form"/>
-        <menuitem id="cost_mantenimiento_menu" name="Mantenimiento" parent="cost_menu" action="base.action_partner_form"/>
+    <menuitem id="cost_menu" name="Costos" parent="production_menu_root" sequence="40"/>
+        <menuitem id="cost_mantenimiento_menu" name="Mantenimiento" parent="cost_menu" sequence="10"/>
 
-        <menuitem id="cost_estimados_menu" name="Costos Estimados" parent="cost_menu" action="base.action_partner_form"/>
+        <menuitem id="cost_gastosIndirectos" name="Gastos Indirectos" parent="cost_menu" sequence="20" action="base.action_partner_form"/>
+        <menuitem id="cost_hojaCostos" name="Hoja de Costos" parent="cost_menu" sequence="30" action="base.action_partner_form"/>
+        <menuitem id="cost_simuladorCostos" name="Simulador de Costos" parent="cost_menu" sequence="40" action="base.action_partner_form"/>
+        <menuitem id="cost_simulaciones" name="Simulaciones" parent="cost_menu" sequence="50" action="base.action_partner_form"/>
 
-        <menuitem id="cost_reportes_menu" name="Reportes" parent="cost_menu" action="base.action_partner_form"/>
+        <menuitem id="cost_estimados_menu" name="Costos Estimados" parent="cost_menu" sequence="60"/>
+            <menuitem id="cost_est_factoresGastos" name="Factores de Gastos" parent="cost_estimados_menu" sequence="10" action="base.action_partner_form"/>
+            <menuitem id="cost_est_distribucionGastos" name="Distribucion de Gastos" parent="cost_estimados_menu" sequence="20" action="base.action_partner_form"/>
 
-        <menuitem id="cost_costEstandar_menu" name="Costo Estandar" parent="cost_menu" action="base.action_partner_form"/>
-            <menuitem id="cost_cosEs_tablas_menu" name="Tablas" parent="cost_costEstandar_menu" action="base.action_partner_form"/>
+        <menuitem id="cost_costEstandar_menu" name="Costo Estandar" parent="cost_menu" sequence="70"/>
+            <menuitem id="cost_cosEs_listaPrecios" name="Lista de Precios C Estandar" parent="cost_costEstandar_menu" sequence="10" action="base.action_partner_form"/>
+            <menuitem id="cost_cosEs_cadenaInsumos" name="Cadena de insumos" parent="cost_costEstandar_menu" sequence="20" action="base.action_partner_form"/>
+            <menuitem id="cost_cosEs_agrupacionCOGS" name="Mantenimiento Agrupacion COGS" parent="cost_costEstandar_menu" sequence="30" action="base.action_partner_form"/>
+            <menuitem id="cost_cosEs_clasificacionCOGS" name="Clasificacion de COGS" parent="cost_costEstandar_menu" sequence="40" action="base.action_partner_form"/>
 
-        <menuitem id="cost_costSemiVariable_menu" name="Costo SemiVariable" parent="cost_menu" action="base.action_partner_form"/>
-            <menuitem id="cost_costSeVa_varPoduccion_menu" name="Variables de Produccion" parent="cost_costSemiVariable_menu" action="base.action_partner_form"/>
-        
-        <menuitem id="cost_dolarizacion_menu" name="Dolarización" parent="cost_menu" action="base.action_partner_form"/>
+            <menuitem id="cost_cosEs_tablas_menu" name="Tablas" parent="cost_costEstandar_menu" sequence="50"/>
+                <menuitem id="cost_cosEs_tablas_validacion" name="Validacion HC vs STD" parent="cost_cosEs_tablas_menu" sequence="10" action="base.action_partner_form"/>
+                <menuitem id="cost_cosEs_tablas_cogsCta" name="Reporte de cogs vs cta distrib" parent="cost_cosEs_tablas_menu" sequence="20" action="base.action_partner_form"/>
+
+        <menuitem id="cost_costSemiVariable_menu" name="Costo SemiVariable" parent="cost_menu" sequence="80"/>
+            <menuitem id="cost_costSeVa_varProduccion_menu" name="Variables de Produccion" parent="cost_costSemiVariable_menu" sequence="10"/>
+                <menuitem id="cost_cosSeVa_catLinea" name="Categoria Linea de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="10" action="base.action_partner_form"/>
+                <menuitem id="cost_cosSeVa_valoresSemi" name="Valores Semi Variables" parent="cost_costSeVa_varProduccion_menu" sequence="20" action="base.action_partner_form"/>
+
+        <menuitem id="cost_dolarizacion_menu" name="Dolarizacion" parent="cost_menu" sequence="90"/>
+            <menuitem id="cost_dol_gastosIndirectos" name="Gastos Indirectos" parent="cost_dolarizacion_menu" sequence="10" action="base.action_partner_form"/>
+            <menuitem id="cost_dol_hojaCostos" name="Hoja de Costos" parent="cost_dolarizacion_menu" sequence="20" action="base.action_partner_form"/>
+
+        <menuitem id="cost_reportes_menu" name="Reportes" parent="cost_menu" sequence="100"/>
+            <menuitem id="cost_rep_abcConsumos" name="ABC Consumos de insumos por OP" parent="cost_reportes_menu" sequence="10" action="base.action_partner_form"/>
+            <menuitem id="cost_rep_totalProduccion" name="Total de Produccion por hoja de costo" parent="cost_reportes_menu" sequence="20" action="base.action_partner_form"/>
+            <menuitem id="cost_rep_valoracionFormula" name="Valoracion Formula mes" parent="cost_reportes_menu" sequence="30" action="base.action_partner_form"/>
+
 </odoo>

@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <menuitem id="plan_menu" name="Planeamiento" parent="production_menu_root" action="base.action_partner_form"/>
-        <menuitem id="plan_mantenimiento_menu" name="Mantenimiento" parent="plan_menu" action="base.action_partner_form"/>
-            <menuitem id="plan_mant_avail_menu" name="AVAIL" parent="plan_mantenimiento_menu" action="base.action_partner_form"/>        
+    <menuitem id="plan_menu" name="Planeamiento" parent="production_menu_root" sequence="10" action="base.action_partner_form"/>
+        <menuitem id="plan_mantenimiento_menu" name="Mantenimiento" parent="plan_menu" sequence="10" action="base.action_partner_form"/>
+
+            <menuitem id="plan_mant_capLineas" name="Capacidad por Lineas" parent="plan_mantenimiento_menu" sequence="10" action="base.action_partner_form"/>
+
+            <menuitem id="plan_mant_avail_menu" name="AVAIL" parent="plan_mantenimiento_menu" sequence="20" action="base.action_partner_form"/>
+                <menuitem id="plan_avail_mapeos" name="Mantenimiento de Mapeos Sucusales" parent="plan_mant_avail_menu" sequence="10" action="base.action_partner_form"/>
+                <menuitem id="plan_avail_lanzarOP" name="Lanzar OProduccion AVAIL" parent="plan_mant_avail_menu" sequence="20" action="base.action_partner_form"/>
+
+            <!-- No se usa en Mexico
+            <menuitem id="plan_mant_ritmoTanques" name="Ritmo de Tanques" parent="plan_mantenimiento_menu" sequence="30" action="base.action_partner_form"/>
+            <menuitem id="plan_mant_moldesFormatos" name="Moldes para Formatos" parent="plan_mantenimiento_menu" sequence="40" action="base.action_partner_form"/>
+            <menuitem id="plan_mant_almacenesPlan" name="Almacenes para Planeamiento" parent="plan_mantenimiento_menu" sequence="50" action="base.action_partner_form"/>
+            <menuitem id="plan_mant_formulasSTD" name="XXX(CADENA) Mant de Formulas STD" parent="plan_mantenimiento_menu" sequence="60" action="base.action_partner_form"/>
+            -->
 </odoo>
