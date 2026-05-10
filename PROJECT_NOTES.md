@@ -114,7 +114,10 @@ Para corregir errores
 En **mantenimiento_menu.xml** se establecen los contenedores o secciones principales.Se han ajustado las secuencias(sequence) para que los grupos aparezcan en el orden visual correcto.
 
 Y los otros archivos con el prefijo **mantenimiento_ ...** de acuerdo al arbol equivalente al excel proporcionado por los lideres de equipo.
-
+# docker start
+```bash
+docker service docker start
+```
 # OpenCode 
 En el terminal 
 ```bash
@@ -122,3 +125,63 @@ opencode auth login # escoger opencode go  , auntenticarse
 /models   #escoger Qwen3.6 similares
 /context add .  # agregando el contexto actual
 ```
+
+# conexion a la base de datos postgresql migrada
+
+Para establecer la conexion se ejecuta **psql -h 100.119.5.108 -p 5432 -U postgres -d mxbdaje_local** o desde pgadmin con las mismas opciones, luego de lo cual se ingresaba la contraseña.
+
+Para que nuestro servicio odoo se conecte a dicha base de datos modificamos 
+```bash
+environment:
+      - HOST=100.119.5.108
+      - PORT=5432
+      - USER=postgres
+      - PASSWORD=051002
+```
+Y la configuracion **odoo.conf**
+```bash
+db_host = 100.119.5.108
+db_user = postgres
+db_password = 051002
+db_port = 5432
+admin_passwd = pass
+db_name = mxbdaje_local
+```
+
+Lo anterior debido a que en la imagen de la conexion, el "host/address" es 100.119.5.108.Se trata de una ip de tailscale (100.x.x.x) , pgadmin esta viajando por internet para conectarse con el ssd donde reside la base de datos migrada.
+
+Mientras que docker es tiene un alcance mas local.
+
+Hechas las modificaciones comprobamos que existe trafico entre el contenedor en wsl , para lo cual se ejecuta
+```bash
+# Prueba si el motor de Docker en WSL2 puede saltar a Tailscale
+docker run --rm alpine nc -zv 100.119.5.108 5432
+#comprobado lo anterior, levantar el servicio 
+docker compose up -d odoo
+# entrando al contenedor de manera interativa y comunicando con la base de datos
+docker exec -it odoo19-server-dev psql -h 100.119.5.108 -U postgres -d mxbdaje_local
+```
+
+Los comandos son exitosos, sin embargo el tiempo de conexion es infima e inestable.
+
+Esto obliga a obtener informacion especifica para el agente.
+
+## validacion para program # 162
+El agente nos proporciona unas primeras descripciones para las funciones de BM-CTL-Produccion_Mexico.xlsx . Desde luego lee su bm_ctl_produccion_descripciones.md correspondiente, sin embrago; para validar realizamos consultas a la base de datos mxbaje_local.Revisar [validacion program #: 162](data_para_agente/validaciones_programs/validacion_program_162.md) 
+
+### Logica de validacion y hallazgos Tecnicos
+La validacion se realizó mediante un proceso de descarte y rastreo de datos en tres etapas, lo que permitió ajustar la estrategia de desarrollo para odoo 19:
+
+1. Investigacion de la infraestructura documental(Tablas de Tramite): Se ejecutraon consultas de volumetrias en las tablas **csolactfor** , **dsolactfor** , **taprform1f** y **aprfor1f**, **taprform1f** y **aprfor1f**
+    - Resultado : 0 registros encontrados
+    - Conclusion Inicial: El flujo multinivel/documental detallado en los manuales teoricos no esta operativa en el ambiente de Mexico.
+2. Rastreo de firmas en el maestro de Produccion (**forfab**): Ante el vacio en las tablas temporales, se auditó directamente la tabla final de produccion(**forfab**) que contiene mas de 70 000 resgistros.
+    - Consulta: **SELECT DISTINCT aprobadop** y **SELECT compania, articulo, aprobadop...**
+    - Hallazgo Critico: Se detectaron IDs de empleados reales (ej 1708248, 6881, 29750) en la columna **aprobadop**
+    - Interpretacion: El proceso de aprobacion **SI EXISTE** , pero se ejecuta de forma plana o directa.Un usuario autorizado marca la formula directamente en el maestro, omitiendo el paso por las tablas de solicitud de activacion.
+3. Analisis de Integridad Cronologica: Se revisaron las columnas **fecaprobadop** y **horaprobadop** en los registros firmados
+    - Resultado : Campos vacios en la mayoria de los registros con aprobador
+    - Interpretacion : El sistema actual tiene una carencia de auditoria temporal(no se sabe cuando se aprobo , solo quién)
+#### Des
+
+

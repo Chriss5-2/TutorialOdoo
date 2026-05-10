@@ -5,7 +5,7 @@
     'summary': 'Menus Production Management',
     'depends': ['base'],
     'data': [
-        #'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/principal_menu.xml',
         'views/produccion_menu.xml',
         'views/planeamiento_menu.xml',
@@ -20,12 +20,7 @@
         'views/mantenimiento_reportes.xml',
         'views/produccion_reportes.xml',
         'views/produccion_reportes_insumos.xml',
-        #'views/ayuda_sistemas.xml',
-        #'views/codigo_barras.xml',
-        #'views/costeo_batch.xml',
-        #'views/formulas_menu.xml',
-        #'views/sig_logistica.xml',
-        #'views/utilidades_menu.xml',
         'views/utils_menu.xml',
+        'views/program_162_formula_aprobacion.xml',
     ]
 }

@@ -28,8 +28,9 @@ services:
       myDB19:
         condition: service_healthy
     environment:
-      - HOST=myDB19
-      - USER=chrizzzadmin
+      - HOST=100.119.5.108
+      - PORT=5432
+      - USER=postgres
       - PASSWORD=051002
     # El comando ahora refleja exactamente lo que hacías en local
     #command: >
