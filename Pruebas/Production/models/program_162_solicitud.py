@@ -73,7 +73,7 @@ class Program162Solicitud(models.Model):
         ('A', 'Aprobado'),
         ('R', 'Rechazado'),
         ('C', 'En Curso'),
-    ], string='Status Aprobacion', default='P', required=True, tracking=True)
+    ], string='Status Aprobacion', default='P', required=True)
     stsactualiza = fields.Char(
         string='Status Actualizacion',
         default='P',
@@ -132,7 +132,7 @@ class Program162Solicitud(models.Model):
         ('approved', 'Aprobado'),
         ('rejected', 'Rechazado'),
         ('cancelled', 'Cancelado'),
-    ], string='Estado', default='draft', required=True, tracking=True)
+    ], string='Estado', default='draft', required=True)
 
     @api.model
     def _default_fecha(self):

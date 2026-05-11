@@ -1,19 +1,19 @@
-# Analisis del BM-CTL-Produccion_Mexico.xlsx y Produccion_arbol_funciones.html
+## Analisis del BM-CTL-Produccion_Mexico.xlsx y Produccion_arbol_funciones.html
 
-## Jerarquia de menus
+### Jerarquia de menus
 Un menu no es mas que una direccion postal. No contiene datos, solo sirve para clasificar y agrupas
 1. Menu raiz(el modulo): Es el contenedor* mas grande (ej Mantenimiento) .En odoo , esto suele aparecer como un icono en el tablero principal-
 2. Sub-Menu (categoria): Agrupa funciones similares(Clasificadores o configuraciones).Su funcion es puramente organizativa para que el usuario no vea 50 opciones de golpe, por ejemplo
 3. Menu de accion (el acceso): Es el nivel más bajo (el circulo azul ej Turnos)
 
-## los programas(la unidad funcional)
+### los programas(la unidad funcional)
 En el sistema antiguo, un programa es una pieza de codigo cerrada.En odoo , un "programa" se traduce tecnicamente en una **accion de ventana**(ir.actions.act_window)<br>
 
 Un programa tiene :
 1. EL modelo (la tabla): Si el programa es **Turnos**, el modelo es la tabla en PostgreSQL que guarda el nombre del turno, hora de inicio y fin.
 2. La vista(La intefaz): Es el diseño de la pantalla(formulario para editar, lista para ver todos)
 3. La logica (python/triggers): Es lo que ocurre cuando se guarda.Aqui nos conectamos con AJE.Por ejemplo , si un programa de "produccion" registra una cantidad, la logica dispara el Recalculo Total que se trabaja en la base datos.
-## Analisis del arbol: El semaforo de mexico
+### Analisis del arbol: El semaforo de mexico
 1. Circulo Azul solido: Programa operativo y necesario.Requiere un archivo xml con su **menuitem** , su **action** y su modelo de base de datos asociado.
 2. Circulo con borde rojo: Son las ramas muertas
     - Tipo de carton o parametro para Max y Min
@@ -31,10 +31,10 @@ Ejemplo
 +-----------------------+--------------------------+------------------------------+
 
 ```
-## Modulos funcionales
+### Modulos funcionales
 Se ven modulos funcionales , en odoo seran los menus que organizan el trabajo de la planta.
  
-### Mantenimiento 
+#### Mantenimiento 
 Es el mantenimiento de los datos maestros.Aqui se crean los turnos , se configuran las lineas de produccion y las etiquetas.
 - Qué hace : Aqui se definen los parametros base: los turnos de trabajo, las lineas de produccion (llenadoras , etiquetadoras) los motivos de por que se detiene una máquina y como deben ser las etiquetas.
 - En mexico : Es vital , se usa para configurar todo el entorno antes de empezar a fabricar 
@@ -82,43 +82,46 @@ Los demas modulos siguen la misma logica
 
 Por ejemplo para planeamiento, se tendra un **planeamiento_menu.xml**.Dentro de este, se creara el menu "Planeamiento" y se indicara que su **parent** es el ID que se define en el archivo principal.
 
-### Planeamiento (Estrategia)
+#### Planeamiento (Estrategia)
 
 Se decide cuándo y cuánto fabricar
 - Qué hace: Gestiona la capacidad de las lineas. Si mexico necesita producir 1 millon de litros de bebida , aqui se calcula si las lineas tiene capacidad fisica para hacerlo en el tiempo esperado.
 - En Mexico: Se usa para mapear sucursales y lanzar ordenes de produccion desde el sistema de planificacion (AVAIL)
  
 
-### Produccion (Ejecución)
+#### Produccion (Ejecución)
 Es el corazon operativa de la fabrica
 - Que hace? : Aquí se pisa la planta.Se lanzan las ordenes de produccion (OP) ,se registra cuánta bebida se tiró(mermas) , cuántas horas trabajo el personal y se sacan los reportes diarios de eficiencia
 - En Mexico: Es donde ocurre el mayor volumen de trasancciones diarias
 
-### Control de Calidad (filtro)
+#### Control de Calidad (filtro)
 Asegura que el producto sea seguro para el consumo
 - Que hace?: Define los planes de inspeccion .Por ejemplo "cada 30 minutos hay que medir el nivel de gas de la bebida"
 - En Mexico: Se usa principalmente para el Plan de inspeccion y aprobar si un lote sale a la venta o se queda en la cuarentena.
 
-### Costos(El dinero)
+#### Costos(El dinero)
 Traduce lo anterior a terminos financieros
 - Que hace?: Calcula el costo real de produccion.Suma el valor de los insumos (azucar , botellas), la mano de obra y los gastos indirectos (luz, agua) para decir cuanto costo cada unidad producida.
 
 - En Mexico : muy importante para la simulacion de costos y control del "costo estandar"
 
-### Utils / Utilidades (Las herramientas de auxilio)
+#### Utils / Utilidades (Las herramientas de auxilio)
 Para corregir errores
 - Que hace: Son funciones administrativas para ajustar el sistema cuando algo sale mal en el dia a dia.
 - En Mexico: Se usa para cambiar "Cambiar de Fecha OP" y corregir "Movimiento de Almacen"
 
-## Implementacion menu Mantenimiento
+### Implementacion menu Mantenimiento
 En **mantenimiento_menu.xml** se establecen los contenedores o secciones principales.Se han ajustado las secuencias(sequence) para que los grupos aparezcan en el orden visual correcto.
 
 Y los otros archivos con el prefijo **mantenimiento_ ...** de acuerdo al arbol equivalente al excel proporcionado por los lideres de equipo.
-# docker start
+
+
+
+## docker start
 ```bash
 docker service docker start
 ```
-# OpenCode 
+## OpenCode 
 En el terminal 
 ```bash
 opencode auth login # escoger opencode go  , auntenticarse
@@ -126,7 +129,7 @@ opencode auth login # escoger opencode go  , auntenticarse
 /context add .  # agregando el contexto actual
 ```
 
-# conexion a la base de datos postgresql migrada
+## conexion a la base de datos postgresql migrada
 
 Para establecer la conexion se ejecuta **psql -h 100.119.5.108 -p 5432 -U postgres -d mxbdaje_local** o desde pgadmin con las mismas opciones, luego de lo cual se ingresaba la contraseña.
 
@@ -166,7 +169,7 @@ Los comandos son exitosos, sin embargo el tiempo de conexion es infima e inestab
 
 Esto obliga a obtener informacion especifica para el agente.
 
-## validacion para program # 162
+## validacion para program # 162 parafraseado con asistencia de gemini
 El agente nos proporciona unas primeras descripciones para las funciones de BM-CTL-Produccion_Mexico.xlsx . Desde luego lee su bm_ctl_produccion_descripciones.md correspondiente, sin embrago; para validar realizamos consultas a la base de datos mxbaje_local.Revisar [validacion program #: 162](data_para_agente/validaciones_programs/validacion_program_162.md) 
 
 ### Logica de validacion y hallazgos Tecnicos
@@ -182,6 +185,40 @@ La validacion se realizó mediante un proceso de descarte y rastreo de datos en 
 3. Analisis de Integridad Cronologica: Se revisaron las columnas **fecaprobadop** y **horaprobadop** en los registros firmados
     - Resultado : Campos vacios en la mayoria de los registros con aprobador
     - Interpretacion : El sistema actual tiene una carencia de auditoria temporal(no se sabe cuando se aprobo , solo quién)
-#### Des
+### Desicion de Arquitectura para Odoo 19
+Basandose en estos hallazgos , se decidio no replicar la carencia del sistema legacy, sino evolucionarla:
+1. Formalizacion del Flujo : Se implementará el flujo estructurado (multinivel) en Odoo 19. Aunque Mexico usa la via mas directa, la base de datos demuestra que la estructura para un control más rigido ya estaba previsto.
+2. Enriquecimiento de Datos: Odoo 19 obligará al registro de marcas de tiempo (**date** y **time**) en cada aprobacion , resolviendo el vacio de informacion detectado en **forfab**
+3. Vinculacion de identidades: Los IDs de empleados encontrados en el legacy seran el puente para la migracion inicial de responsabilidades hacia los usuarios (**res.users**) en la nueva plataforma.
 
+
+### Implementacion del agente Qwen3.2 Plus
+Se ha instruido al agente priorizar la logica de negocio en la capa de **models.py**.La base de datos legacy se utilizará unicamente como fuente de extraccion de IDs de aprobadores para el mapeo inicial, pero la logica de aprobacion será sustituido por un flujo de datos nativos de Odoo 19 que garantiza la integridad cronologica y jeraquica ausente en el sistema original.
+
+```bash
+Implementation complete. Created Program#162 "Aprobacion de Formulas" with:
+Models (5 files in models/):
+- program_162_solicitud.py - Solicitud header (csolactfor)
+- program_162_solicitud_line.py - Solicitud lines (dsolactfor)
+- program_162_aprobador_config.py - Approver config (aprfor1f)
+- program_162_firma.py - Approval signatures (taprform1f)
+- program_162_tmp_detalle.py - Temp detail (tmpdetfor)
+Views (views/program_162_formula_aprobacion.xml):
+- Tree/Form/Search views for solicitudes
+- Config view for aprobadores
+- Historial de firmas view
+- Menu structure: Formulas > Aprobacion de Formulas, Configuracion
+Security: security/ir.model.access.csv with full permissions
+State Machine: draft -> pending -> approved/rejected/cancelled
+Updated: __manifest__.py, __init__.py
+```
+### Resumen Digerible : "dejar de usar un cuaderno viejo y desordenado para pasarnos a una aplicacion moderna"
+
+1. Lo que hacía el sistema legacy.Es como si alguien , despues de terminar una formula, simplemente escribiera su numero de empleado en una celda y ya. No hay rastro de a qué  hora lo hizo , ni quién le pidió que lo hiciera, ni si alguien más revisó la receta. Es un proceso "mudo".
+
+2. Lo que estamos haciendo en **models.py**: Estamos diseñando las "reglas de juego" en Odoo.En luga de solo anotar un nombre al final. Odoo obligará a que la formula pase por : **Borrador** → **Por revisar** → **Aprobado**
+3. La base de datos vieja es solo un directorio: Solo vamos a entrar a la base de datos vieja para sacar la lista de quienes eran los jefes **IDs como 1708248** para que cuando Odoo empiece a funcionar , ya sepa quienes son esas personas
+4. Odoo pone el orden : A partir de ahora , Odoo anotara automaticamente **Usuario aprobó esta formula el 10 de mayo a las 4:00 PM**.Ya no habrá celdas vacias como en el sitema legacy(actual)
+
+No se esta copiando el sistema viejo(que tiene huecos) estamos usando el sistema viejo solo para saber quién es quién, pero las nuevas reglas de serguridad y orden las está escribiendo el agente en el codigo de Odoo. 
 

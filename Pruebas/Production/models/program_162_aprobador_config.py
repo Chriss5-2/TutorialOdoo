@@ -64,12 +64,6 @@ class Program162AprobadorConfig(models.Model):
         default=lambda self: self.env.user.login,
     )
 
-    _sql_constraints = [
-        ('unique_aprobador_nivel',
-         'unique(compania, transaccio, nivel, tipaprob, aprobador)',
-         'Ya existe un aprobador configurado para este nivel y tipo'),
-    ]
-
     @api.model
     def _default_fecha(self):
         from datetime import date

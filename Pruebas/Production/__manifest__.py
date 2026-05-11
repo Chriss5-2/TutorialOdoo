@@ -1,9 +1,9 @@
 {
-    'name': 'Menus Production',
+    'name': 'Menus Production-Aprobacion formulas',
     'version': '1.0',
     'category': 'Production Testing',
     'summary': 'Menus Production Management',
-    'depends': ['base'],
+    'depends': ['base','hr'],
     'data': [
         'security/ir.model.access.csv',
         'views/principal_menu.xml',
@@ -15,7 +15,7 @@
         'views/mantenimiento_menu.xml',
         'views/mantenimiento_clasificadores.xml',
         'views/mantenimiento_configuracion.xml',
-        'views/mantenimiento_configuracion_codigo_barras.xml',
+        'views/mantenimiento_configuracion_codigoBarras.xml',
         'views/mantenimiento_consultas.xml',
         'views/mantenimiento_reportes.xml',
         'views/produccion_reportes.xml',

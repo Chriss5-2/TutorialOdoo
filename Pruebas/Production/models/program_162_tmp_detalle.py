@@ -68,9 +68,3 @@ class Program162TmpDetalle(models.Model):
         string='Eliminar Registro',
         default=False,
     )
-
-    _sql_constraints = [
-        ('unique_tmpdetfor',
-         'unique(clave, compania, transaccio, nrodoc, sucform, articulo, insumo)',
-         'Ya existe un registro temporal para esta combinacion'),
-    ]

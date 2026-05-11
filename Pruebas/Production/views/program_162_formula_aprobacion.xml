@@ -10,12 +10,12 @@
             <field name="company_id" eval="False"/>
         </record>
 
-        <!-- SOLICITUD TREE VIEW -->
-        <record id="view_formula_solicitud_tree" model="ir.ui.view">
-            <field name="name">bm.ctl.produccion.formula.solicitud.tree</field>
+        <!-- SOLICITUD list VIEW -->
+        <record id="view_formula_solicitud_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.formula.solicitud.list</field>
             <field name="model">bm.ctl.produccion.formula.solicitud</field>
             <field name="arch" type="xml">
-                <tree string="Solicitudes de Formula" decoration-info="state == 'draft'" decoration-warning="state == 'pending'" decoration-success="state == 'approved'" decoration-danger="state in ('rejected', 'cancelled')">
+                <list string="Solicitudes de Formula" decoration-info="state == 'draft'" decoration-warning="state == 'pending'" decoration-success="state == 'approved'" decoration-danger="state in ('rejected', 'cancelled')">
                     <field name="name"/>
                     <field name="fecha"/>
                     <field name="solicitante"/>
@@ -23,7 +23,7 @@
                     <field name="qacciones"/>
                     <field name="stsaprobac"/>
                     <field name="state"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -34,11 +34,11 @@
             <field name="arch" type="xml">
                 <form string="Solicitud de Formula">
                     <header>
-                        <button name="action_submit" string="Enviar a Aprobacion" type="object" class="oe_highlight" states="draft"/>
-                        <button name="action_approve" string="Aprobar" type="object" class="oe_highlight" states="pending"/>
-                        <button name="action_reject" string="Rechazar" type="object" states="pending"/>
-                        <button name="action_cancel" string="Cancelar" type="object" states="draft,pending"/>
-                        <button name="action_reset_to_draft" string="Reiniciar a Borrador" type="object" states="rejected,cancelled"/>
+                        <button name="action_submit" string="Enviar a Aprobacion" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_approve" string="Aprobar" type="object" class="oe_highlight" invisible="state != 'pending'"/>
+                        <button name="action_reject" string="Rechazar" type="object" invisible="state != 'pending'"/>
+                        <button name="action_cancel" string="Cancelar" type="object" invisible="state not in ('draft','pending')"/>
+                        <button name="action_reset_to_draft" string="Reiniciar a Borrador" type="object" invisible="state not in ('rejected','cancelled')"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,pending,approved"/>
                     </header>
                     <sheet>
@@ -76,7 +76,7 @@
                         <notebook>
                             <page string="Lineas de Formula" name="lineas">
                                 <field name="line_ids">
-                                    <tree string="Lineas" editable="bottom">
+                                    <list string="Lineas" editable="bottom">
                                         <field name="sucform"/>
                                         <field name="articulo"/>
                                         <field name="insumo"/>
@@ -86,19 +86,19 @@
                                         <field name="nivapro"/>
                                         <field name="flgaprob"/>
                                         <field name="stssolicitud"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
                             <page string="Firmas de Aprobacion" name="firmas">
                                 <field name="firma_ids" readonly="1">
-                                    <tree string="Firmas">
+                                    <list string="Firmas">
                                         <field name="nivel"/>
                                         <field name="empleautor"/>
                                         <field name="fecautoriz"/>
                                         <field name="horautoriz"/>
                                         <field name="stsaprobac"/>
                                         <field name="observac"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
                         </notebook>
@@ -112,19 +112,19 @@
             <field name="name">bm.ctl.produccion.formula.solicitud.search</field>
             <field name="model">bm.ctl.produccion.formula.solicitud</field>
             <field name="arch" type="xml">
-                <search string="Buscar Solicitudes">
+                <search>
                     <field name="name"/>
                     <field name="solicitante"/>
                     <field name="compania"/>
                     <field name="transaccio"/>
+                    <separator/>
                     <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
                     <filter name="pending" string="En Aprobacion" domain="[('state', '=', 'pending')]"/>
                     <filter name="approved" string="Aprobado" domain="[('state', '=', 'approved')]"/>
                     <filter name="rejected" string="Rechazado" domain="[('state', '=', 'rejected')]"/>
-                    <group expand="0" string="Agrupar por">
-                        <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
-                        <filter name="group_stsaprobac" string="Status Aprobacion" context="{'group_by': 'stsaprobac'}"/>
-                    </group>
+                    <separator/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_stsaprobac" string="Status Aprobacion" context="{'group_by': 'stsaprobac'}"/>
                 </search>
             </field>
         </record>
@@ -133,7 +133,7 @@
         <record id="action_formula_solicitud" model="ir.actions.act_window">
             <field name="name">Aprobacion de Formulas</field>
             <field name="res_model">bm.ctl.produccion.formula.solicitud</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="search_view_id" ref="view_formula_solicitud_search"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
@@ -145,19 +145,19 @@
             </field>
         </record>
 
-        <!-- APROBADOR CONFIG TREE VIEW -->
-        <record id="view_formula_aprobador_config_tree" model="ir.ui.view">
-            <field name="name">bm.ctl.produccion.formula.aprobador.config.tree</field>
+        <!-- APROBADOR CONFIG list VIEW -->
+        <record id="view_formula_aprobador_config_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.formula.aprobador.config.list</field>
             <field name="model">bm.ctl.produccion.formula.aprobador.config</field>
             <field name="arch" type="xml">
-                <tree string="Configuracion de Aprobadores" editable="bottom">
+                <list string="Configuracion de Aprobadores" editable="bottom">
                     <field name="compania"/>
                     <field name="transaccio"/>
                     <field name="nivel"/>
                     <field name="tipaprob"/>
                     <field name="aprobador"/>
                     <field name="estado"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -165,7 +165,7 @@
         <record id="action_formula_aprobador_config" model="ir.actions.act_window">
             <field name="name">Configuracion de Aprobadores</field>
             <field name="res_model">bm.ctl.produccion.formula.aprobador.config</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     Configura los aprobadores por nivel
@@ -176,12 +176,12 @@
             </field>
         </record>
 
-        <!-- FIRMA TREE VIEW -->
-        <record id="view_formula_firma_tree" model="ir.ui.view">
-            <field name="name">bm.ctl.produccion.formula.firma.tree</field>
+        <!-- FIRMA list VIEW -->
+        <record id="view_formula_firma_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.formula.firma.list</field>
             <field name="model">bm.ctl.produccion.formula.firma</field>
             <field name="arch" type="xml">
-                <tree string="Firmas de Aprobacion">
+                <list string="Firmas de Aprobacion">
                     <field name="nrodoc"/>
                     <field name="nivel"/>
                     <field name="empleautor"/>
@@ -189,7 +189,7 @@
                     <field name="horautoriz"/>
                     <field name="stsaprobac"/>
                     <field name="observac"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -197,7 +197,7 @@
         <record id="action_formula_firma" model="ir.actions.act_window">
             <field name="name">Historial de Firmas</field>
             <field name="res_model">bm.ctl.produccion.formula.firma</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     No hay firmas registradas
@@ -208,22 +208,11 @@
             </field>
         </record>
 
-        <!-- MENU ITEMS -->
-        <menuitem id="menu_formula_root"
-                  name="Formulas"
-                  parent="production_menu_root"
-                  sequence="10"/>
-
-        <menuitem id="menu_formula_aprobacion"
-                  name="Aprobacion de Formulas"
-                  parent="menu_formula_root"
-                  action="action_formula_solicitud"
-                  sequence="10"/>
-
+        <!-- MENU ITEMS (Configuracion bajo Mantenimiento) -->
         <menuitem id="menu_formula_config"
-                  name="Configuracion"
-                  parent="menu_formula_root"
-                  sequence="20"/>
+                  name="Configuracion Formulas"
+                  parent="mant_menu"
+                  sequence="60"/>
 
         <menuitem id="menu_formula_aprobador_config"
                   name="Aprobadores"

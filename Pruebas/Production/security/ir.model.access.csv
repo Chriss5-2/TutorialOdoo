@@ -1,6 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_bm_formula_solicitud,bm.ctl.produccion.formula.solicitud,model_bm_ctl_produccion_formula_solicitud,,1,1,1,1
-access_bm_formula_solicitud_line,bm.ctl.produccion.formula.solicitud.line,model_bm_ctl_produccion_formula_solicitud_line,,1,1,1,1
-access_bm_formula_aprobador_config,bm.ctl.produccion.formula.aprobador.config,model_bm_ctl_produccion_formula_aprobador_config,,1,1,1,1
-access_bm_formula_firma,bm.ctl.produccion.formula.firma,model_bm_ctl_produccion_formula_firma,,1,1,1,1
-access_bm_formula_tmp_detalle,bm.ctl.produccion.formula.tmp.detalle,model_bm_ctl_produccion_formula_tmp_detalle,,1,1,1,1
+access_bm_formula_solicitud,bm.ctl.produccion.formula.solicitud,model_bm_ctl_produccion_formula_solicitud,base.group_user,1,1,1,1
+access_bm_formula_solicitud_line,bm.ctl.produccion.formula.solicitud.line,model_bm_ctl_produccion_formula_solicitud_line,base.group_user,1,1,1,1
+access_bm_formula_aprobador_config,bm.ctl.produccion.formula.aprobador.config,model_bm_ctl_produccion_formula_aprobador_config,base.group_user,1,1,1,1
+access_bm_formula_firma,bm.ctl.produccion.formula.firma,model_bm_ctl_produccion_formula_firma,base.group_user,1,1,1,1
+access_bm_formula_tmp_detalle,bm.ctl.produccion.formula.tmp.detalle,model_bm_ctl_produccion_formula_tmp_detalle,base.group_user,1,1,1,1
