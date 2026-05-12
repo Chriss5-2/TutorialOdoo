@@ -10,3 +10,4 @@ Se divide en tres funciones:
 En un flujo de aprobacion de formulas, el Chatter es tu mejor prueba de cumplimiento.Ahi quedará registrado con fecha, hora y usuario exactamente quien autorizó y cuándo, de forma visual y cronológica.
 
 
+## 

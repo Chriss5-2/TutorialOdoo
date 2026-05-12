@@ -71,4 +71,7 @@ BM-CTL-Produccion_Mexico.xlsx
 .opencode/
 bm_ctl_produccion.md
 scripts_para_agente/
-historial_agente/
+historial_agente/ 
+imagenes/
+AGENTS.md
+TECH_NOTES.md
