@@ -70,6 +70,5 @@ Produccion_arbol_funciones.html
 BM-CTL-Produccion_Mexico.xlsx
 .opencode/
 bm_ctl_produccion.md
-convert_csv_to_md.py
-convertir_todo.py
-data_para_agente/
+scripts_para_agente/
+historial_agente/
