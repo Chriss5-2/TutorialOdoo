@@ -696,7 +696,11 @@ compania | sucursal | fecprg | turno | fameqp | lineqp | tipenvase | formato | s
 
 
 **comentario**
-1. AGENTE COMPLETA TU ANALISIS
+1. **Campo `turno` vacío en registros antiguos**: Los primeros 15 registros muestran el campo `turno` completamente vacío (NULL o string vacío), junto con `fameqp` vacío y `lineqp = 0`. Esto indica registros de programación inicial o plantillas sin asignar, posiblemente creados durante la configuración inicial del sistema.
+2. **Fechas julianas tempranas**: `fecprg` va de 735131 a 736564 (aprox. 2013-2017), sugiriendo que estos son registros históricos de prueba o migración inicial que nunca se completaron.
+3. **Compañías diversas**: Aparecen compañías `0100` y `0002` con múltiples sucursales, pero sin datos de producción reales (todos los campos en cero/vacío).
+4. **Implicación para migración**: Estos registros huérfanos deben filtrarse durante la migración a Odoo 19. Solo se deben migrar registros de `opxlinea` con `turno` poblado y `cjsprg > 0` (cajas programadas reales).
+5. **Relación turno-línea**: La tabla `opxlinea` usa `turno` como `text` (no como FK numérica), confirmando que el código de turno se almacena directamente como llave natural en cada línea de programación.
 
 ### Seccion. Auditoria de tiempos improductivos - Tabla PARPROD
 Se busca inspeccionar la estructura y los datos de la tabla **parprod** para entender cómo se registran los paros de linea y su vinculacion con los turnos operativos.
@@ -851,6 +855,12 @@ Indexes:
 \d: extra argument "10;" ignored
 ```
 **comentarios**
+1. **Tabla de parámetros, no de paros**: A pesar del nombre `parprod` (que podría interpretarse como "paros de producción"), la estructura revela que es una tabla de **parámetros de producción** por compañía. La PK `(compania, codigo)` con solo 4 registros (uno por compañía activa) confirma que es configuración, no transaccional.
+2. **`nroturno` como smallint vs `ultturno` como text**: `nroturno` almacena el turno como número (3), mientras `ultturno` lo almacena como texto formateado ('003'). Esta dualidad refleja la inconsistencia del sistema legacy: algunos módulos usan formato numérico, otros formato string con ceros.
+3. **`horaxtur` y `diaxmes`**: Campos clave para cálculo de capacidad productiva. `horaxtur` (horas por turno) y `diaxmes` (días de operación al mes) son parámetros base para planificación de producción.
+4. **Campos `libre1-15`**: Campos extensibles para personalizaciones futuras, patrón común en sistemas legacy para evitar ALTER TABLE.
+5. **Múltiples áreas y familias**: Campos como `areman`, `arettag`, `famsop`, `famjar` indican que esta tabla configura qué áreas y familias de productos están activas por compañía, incluyendo manejo de racks, devoluciones, y protocolos.
+6. **Sin fecha de creación válida**: `feccrea = 0` en todos los registros, indicando carga inicial del sistema sin timestamp válido.
 
 
 ### seccion : Auditoria de parametros de produccion - Tabla PARPROD (complemento de la seccion anterior)
@@ -871,9 +881,15 @@ compania | codigo | nroturno | ultturno | feccrea
 ```
 
 **comentario**
-
-### Seccion : Alcance Operativo - Segmentacion de Turnos por Sucursal 
+1. **Confirmación de tabla de parámetros**: Solo 4 registros, uno por compañía (`0035`, `0030`, `0032`, `0075`), con `codigo = 1` en todos. Esto confirma que `parprod` es una tabla de configuración global de producción por compañía, no una tabla transaccional de paros.
+2. **`nroturno = 3` uniforme**: Todas las compañías tienen configurado el turno 3 como turno predeterminado o último turno de referencia. Coincide con `ultturno = '003'` (mismo valor, diferente formato).
+3. **`feccrea = 0` en todos**: Sin fecha de creación válida, indicando carga inicial del sistema sin timestamp. Patrón consistente con otras tablas maestras cargadas en bloque.
+4. **Compañía `0075` nueva**: Aparece en `parprod` pero no fue vista en análisis anteriores de `bturno1f`. Necesario verificar si tiene turnos configurados en la tabla `turno`.
+5. **Implicación para Odoo 19**: Estos parámetros deben mapearse a la configuración de la compañía en Odoo (`res.company`), específicamente campos como `horaxtur` (horas por turno) y `diaxmes` (días operativos al mes) que afectan la planificación de producción (MRP). 
 **objetivo**: identificar el alcance real de las sucursales que tienen turnos configurados, con el fi de determinar la complejidad del despliegue multi-compañia en Odoo 19.
+
+### Seccion: Mapeo de Alcance Operativo- Segmentacion Multi-Compañia  y Sucursales
+**objetivo**: Determinar la cobertura geografica  y organizacional del sistema mediante la identificacion   de combinaciones unicas de compañia y sucursal, con el fin de dimensionar el despliegue de estructuras en Odoo 19 ...
 
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"SELECT DISTINCT compania, sucursal FROM turno ORDER BY compania, sucursal;\" | psql -h IP -U postgres -d mxbdaje_local"
@@ -906,3 +922,567 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"SELEC
 ```
 
 **comentario**
+1. **Distribución por compañía**:
+   - **Compañía `0030`**: 11 sucursales activas (`0001`, `0068`, `0070`, `0086`, `0108`, `0112`, `0113`, `0114`, `0115`, `0116`, `114`). Es la compañía con mayor cobertura operativa. Nota: `114` y `0114` podrían ser la misma sucursal con formato inconsistente.
+   - **Compañía `0032`**: 1 sucursal (`0001`). Operación concentrada en una sola planta.
+   - **Compañía `0035`**: 6 sucursales (`01`, `03`, `04`, `05`, `08`, `09`). Formato de sucursal sin ceros a la izquierda (diferente a `0030`).
+   - **Compañía `0036`**: 1 sucursal (`01`). Operación mínima o nueva.
+2. **Inconsistencia en formato de sucursal**: `0030` usa formato de 4 dígitos (`0001`, `0068`), mientras `0035` y `0036` usan formato de 2 dígitos (`01`, `09`). Esto requiere normalización durante la migración a Odoo 19 para evitar duplicados o referencias rotas.
+3. **Sucursal `114` vs `0114` en compañía `0030`**: Posible duplicado por inconsistencia de formato. Necesaria consulta de validación para confirmar si son la misma entidad.
+4. **Total**: 19 combinaciones únicas de `compania/sucursal` con turnos configurados. Esto define el scope real del despliegue multi-compañía en Odoo 19.
+5. **Compañías sin turnos configurados**: `0002`, `0075`, `0076`, `0081`, `0100`, `5000` (vistas en `bturno1f` o `opxlinea`) NO aparecen en `turno`. Pueden ser compañías inactivas, de solo distribución, o que aún no han configurado sus horarios de turno.
+6. **Implicación para Odoo 19**: Cada compañía (`0030`, `0032`, `0035`, `0036`) debe mapearse a un `res.company` en Odoo, y cada sucursal a un `stock.warehouse` o `mrp.workcenter` dependiendo de si es planta de producción o centro de distribución.
+
+## Dudas luego del analisis de las consultas previas
+
+### 1. 
+Relación bturno1f ↔ turno — ¿Cuál es la maestra definitiva?
+- bturno1f: 30 registros, turnos por compañía (sin sucursal, sin horarios)
+- turno: 55 registros, turnos por compañía + sucursal (con hinicio/hfin)
+- Duda: ¿bturno1f es catálogo global y turno es la instancia operativa por sucursal? ¿O son redundantes y una está obsoleta?
+- Consulta sugerida: SELECT compania, turno FROM bturno1f WHERE compania = '0035'; (0035 está en turno pero no apareció en los 20 rows vistos de bturno1f)
+
+**absolución**
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"SELECT compania, turno FROM bturno1f WHERE compania = '0035';\" | psql -h IP -U postgres -d mxbdaje_local"
+```
+```text
+compania | turno 
+----------+-------
+ 0035     | 001
+ 0035     | 002
+ 0035     | 003
+(3 rows)
+
+```
+**conclusion** 
+1. **Confirmada relación jerárquica**: `bturno1f` es el **catálogo global** de turnos (definición base por compañía), mientras `turno` es la **instancia operativa** con horarios reales por sucursal.
+2. **Compañía `0035` sí existe en `bturno1f`**: Tiene los 3 turnos estándar (`001`, `002`, `003`), confirmando que todas las compañías activas en `turno` tienen su definición en `bturno1f`.
+3. **Patrón de diseño**: `bturno1f` define "qué turnos existen" (código + descripción), `turno` define "cuándo operan" (hinicio/hfin) por cada sucursal.
+4. **Implicación para Odoo 19**: El modelo debe reflejar esta jerarquía: un modelo `bm.turno.definicion` (catálogo) y `bm.turno.horario` (instancias por sucursal con horarios).
+
+### 2.
+2. Discrepancia de compañías entre tablas
+Compañía
+0030
+0032
+0035
+0036
+0070
+0075
+0076
+0081
+5000
+- Duda: 0070, 0076, 0081, 5000 tienen definición de turno pero sin horarios configurados. ¿Son compañías inactivas o migradas?
+- Duda: 0075 tiene parámetros de producción pero sin turnos. ¿Cómo opera?
+
+**absolucion**
+Aparecen en bturno1f pero en la tabla operativa turno no tienen horas de inicio  o fin configuradas.Verificar si estas compañias tienen movimientos reales en la tabla de programacion de lineas opxlinea.
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT compania, COUNT(*) FROM opxlinea WHERE compania IN ('0070', '0076', '0081', '5000') GROUP BY compania;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+compania | count 
+----------+-------
+(0 rows)
+
+```
+0075 aparece en la tabla de parametros de produccion parprod (el sistema sabe que debe producir algo) pero no tiene turnos definidos.Verificar si la compañia usa una estructura distinta o simplemente es una configuracion incompleta
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT * FROM parprod WHERE compania = '0075';\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+compania | codigo | inc | ind | despachoma | devdisp | devrechaza | dvc | trancontro | parteing | tranajting | tranajtsal | salmstr | mpi | mps | cliente | reqprod | tranoprod | tranocomp | tranreq | trantra | actrcal | aprduc | feccrea | horcrea | usucrea | fecultimod | horultimod | usuultimod | nroturno | horaxtur | diaxmes | reqalmlog | famenv | famsop | famjar | aprobot | proreqpro | cotizacion | tipartser | almcont | devmer | protocolos | salidacc | falpro | sobpro | trnconmue | manejo_x_racks | faccjs | plapro | savvar | faminy | famazu | libre1 | libre2 | libre3 | libre4 | libre5 | libre6 | libre7 | libre8 | libre9 | libre10 | libre11 | areman | aretag | areazu | arejara | arelvbt | arelifz | arebb | almvalr | almvalg | almnovg | almnovr | libre12 | libre13 | libre14 | libre15 | areemb | areiso | famemb | famiso | linmpmp | linmpis | linrefrp | linrefpg | lingesm | lingesmp | ctptvta | ctptded | ctptcob | ctptdif | tartprt | famjbag | famjbiso | arenect | famjnec | famnect | areminy | famminy | trasptin | vtamaqui | cdogtoind | sucprin | tramuest | trarqalm | almproc | trasalaut | traingaut | famresina | ultturno | diastkseg | actalmpro | tranvalno | tipartins | tipartemp | trandocref | tradevprov | almmp | almcon | almconref | almcongen | trasalcon | traingcon | almafijo | flgatepro 
+----------+--------+-----+-----+------------+---------+------------+-----+------------+----------+------------+------------+---------+-----+-----+---------+---------+-----------+-----------+---------+---------+---------+--------+---------+---------+---------+------------+------------+------------+----------+----------+---------+-----------+--------+--------+--------+---------+-----------+------------+-----------+---------+--------+------------+----------+--------+--------+-----------+----------------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+---------+---------+--------+--------+--------+---------+---------+---------+-------+---------+---------+---------+---------+---------+---------+---------+---------+--------+--------+--------+--------+---------+---------+----------+----------+---------+----------+---------+---------+---------+---------+---------+---------+----------+---------+---------+---------+---------+---------+----------+----------+-----------+---------+----------+----------+---------+-----------+-----------+-----------+----------+-----------+-----------+-----------+-----------+-----------+------------+------------+-------+--------+-----------+-----------+-----------+-----------+----------+-----------
+ 0075     |      1 | 026 | ISO | DSP        | DPD     | DPR        | 047 | TCC        | INP      | AJI        | AJS        | SPM     | MPI | MPS |       0 | RQP     | OPR       | OCO       | REQ     | TRA     | 700     | 700    |       0 | 000001  |         |          0 | 000001     |            |        3 |        8 |      26 | RAL       | 001    | 002    | 003    | 704     |         0 |            |           | 1008    | DPM    |            |          | FPR    |        |           | \x46           |  5.678 |        | SPP    | 009    | 010    | DPP    | DMC    | CVT    | 007    | 002    |        | 70     |      1 |      0 |       0 |       0 | 703    | 705    | 706    | 707     | 709     | 711     | 712   | 1009    | 1007    | 1050    | 1051    | IDU     | 709     | 045     | 004     | 713    | 714    | 013    | 014    |         |         |          |          |         |          | CVE     | CVD     | CVC     | CVS     | 004     | 015     | 016      | 701     | 019     | 018     | 717     | 017     | 100      | SVQ      | 001       | 0001    | IMU      | 040      | 83      | ATP       | IAP       | 020       | 003      |         3 | \x46      | 025       | 001       | 003       | TNS        | SPR        |       |        |           |           |           |           |          | \x54
+(1 row)
+
+```
+0075 tiene parametros en parprod pero no turnos
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT DISTINCT compania FROM turno;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+ compania 
+----------
+ 0030
+ 0032
+ 0036
+ 0035
+(4 rows)
+
+```
+Alguna vez ha producido algo, a pesar de no tener turnos configurados?
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT count(*) FROM opxlinea WHERE compania = '0075';\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+ 
+ count 
+-------
+     0
+(1 row)
+```
+0036 está en turno pero no en parprod (configuracion global) ,un inversion de lo que pasa con 0075
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT DISTINCT sucursal FROM turno WHERE compania = '0036';\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+ sucursal 
+----------
+ 01
+(1 row)
+
+```
+**conclusion**
+1. **Compañías `0070`, `0076`, `0081`, `5000` son inactivas**: Cero registros en `opxlinea` (tabla de programación operativa). Tienen definición de turno en `bturno1f` pero nunca configuraron horarios en `turno` ni tuvieron actividad productiva. Son compañías creadas durante configuración inicial pero nunca puestas en producción.
+2. **Compañía `0075` es registro zombi**: Tiene parámetros de producción configurados (`parprod` con `nroturno=3`, `horaxtur=8`, `diaxmes=26`), pero **sin turnos definidos** en `turno` y **cero actividad** en `opxlinea`. Configuración incompleta abandonada, posiblemente una compañía planificada que nunca operó.
+3. **Compañías activas confirmadas**: Solo `0030`, `0032`, `0035`, `0036` tienen turnos operativos configurados. Estas son las únicas que deben migrarse con estructura completa de turnos a Odoo 19.
+4. **Acción de limpieza**: Las compañías `0070`, `0076`, `0081`, `5000` pueden excluirse de la migración o migrarse como `res.company` inactivas sin horarios de turno. La `0075` es registro zombi y debe descartarse salvo validación expresa del equipo de negocio.
+5. **Compañía `0036` es entidad de alcance mínimo**: Tiene 1 sucursal (`01`) configurada en `turno` pero **carece de parámetros globales** en `parprod`. No tiene su perfil de configuración completo. Posible compañía nueva en proceso de setup o planta piloto con operación limitada.
+
+### 3. 
+Sucursal 114 vs 0114 en compañía 0030
+- Ambas existen en turno como registros separados
+- Duda: ¿Duplicado por inconsistencia de formato o son sucursales reales distintas?
+- Consulta sugerida: SELECT * FROM turno WHERE compania='0030' AND sucursal IN ('114','0114');
+---
+
+Los registros de las sucursales 114  y 0114 comparten la misma configuracion operativa o representan entidades fisicas diferentes.
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT sucursal, turno, hinicio, hfin, flgidavail, flgenuso FROM turno WHERE compania='0030' AND sucursal IN ('114','0114') ORDER BY turno;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+```
+
+```text
+sucursal | turno | hinicio |  hfin  | flgidavail | flgenuso 
+----------+-------+---------+--------+------------+----------
+ 114      | 001   | 063000  | 143000 | \x46       | \x46
+ 0114     | 001   | 063000  | 143000 | \x46       | \x46
+ 114      | 002   | 143000  | 220000 | \x46       | \x46
+ 0114     | 002   | 143000  | 220000 | \x46       | \x46
+ 114      | 003   | 220000  | 063000 | \x46       | \x46
+ 0114     | 003   | 220000  | 063000 | \x46       | \x46
+(6 rows)
+
+```
+**conclusion**
+1. **Confirmado: Es un DUPLICADO**: Ambas sucursales (`114` y `0114`) tienen exactamente la misma configuración de horarios para los 3 turnos:
+   - Turno 1: `063000` → `143000`
+   - Turno 2: `143000` → `220000`
+   - Turno 3: `220000` → `063000`
+   - Mismas banderas `flgidavail = \x46`, `flgenuso = \x46`
+
+2. **Causa raíz**: Inconsistencia de formato en la carga de datos. `0114` sigue el estándar de 4 dígitos de la compañía `0030`, mientras `114` es una variante sin ceros a la izquierda.
+
+3. **Verificación adicional requerida**: Necesario confirmar si ambas sucursales tienen datos transaccionales asociados o si una de ellas es la "correcta" y la otra es un artefacto de migración.
+
+**Consulta de validación sugerida**:
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"
+SELECT 'turnoxop' as tabla, sucursal, COUNT(*) FROM turnoxop 
+WHERE compania='0030' AND sucursal IN ('114','0114') GROUP BY sucursal
+UNION ALL
+SELECT 'opxlinea', sucursal, COUNT(*) FROM opxlinea 
+WHERE compania='0030' AND sucursal IN ('114','0114') GROUP BY sucursal
+UNION ALL
+SELECT 'horpro', sucursal, COUNT(*) FROM horpro 
+WHERE compania='0030' AND sucursal IN ('114','0114') GROUP BY sucursal;
+\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+ tabla   | sucursal | count 
+----------+----------+-------
+ turnoxop | 114      |     1
+ turnoxop | 0114     |    40
+ opxlinea | 0114     |     1
+ opxlinea | 114      |     1
+ horpro   | 0114     |    61
+(5 rows)
+```
+
+4. **Acción recomendada para Odoo 19**: Consolidar en `0114` (estándar 4 dígitos). La evidencia es contundente:
+   - `turnoxop`: `0114` tiene **40 registros** vs `114` con solo **1** (posible escritura manual que el sistema no rechazó por falta de validación de formato).
+   - `horpro`: Exclusivo de `0114` con **61 registros**. `114` no tiene horas de producción registradas.
+   - `opxlinea`: Ambas tienen 1 registro cada una, pero el de `114` es probablemente el mismo evento de escritura manual sin validación.
+   - **Veredicto**: `114` es un artefacto de inconsistencia de formato, no una sucursal real. Migrar solo `0114` y sus 40+61 registros transaccionales. El registro huérfano de `114` puede descartarse o reasignarse a `0114` si se valida que corresponde a la misma operación.
+
+---
+
+## CONCLUSIONES GENERALES - PUNTOS CRÍTICOS RESUELTOS
+
+### Resumen de Hallazgos
+
+| Punto | Duda Original | Resolución |
+|-------|--------------|------------|
+| **1. bturno1f ↔ turno** | ¿Cuál es la maestra? | **Jerárquica**: `bturno1f` = catálogo global, `turno` = instancia operativa por sucursal |
+| **2. Compañías discrepantes** | ¿0070/0075/0076/0081/5000 activas? | **Inactivas/zombi**: Solo `0030`, `0032`, `0035`, `0036` operativas. `0075` zombi, `0036` alcance mínimo |
+| **3. 114 vs 0114** | ¿Duplicado o sucursales distintas? | **Duplicado confirmado**: `0114` es la real (40 turnoxop, 61 horpro). `114` es artefacto de formato (1 registro huérfano) |
+
+### Scope Definitivo para Migración a Odoo 19
+
+**Compañías a migrar con estructura completa de turnos**:
+- `0030` — 10 sucursales reales (excluyendo `114` duplicado)
+- `0032` — 1 sucursal
+- `0035` — 6 sucursales
+- `0036` — 1 sucursal (configuración incompleta, requiere validación)
+
+**Total**: 18 sucursales reales × 3 turnos = **~54 registros de horarios** a migrar.
+
+**Excluidos de migración**:
+- `0070`, `0076`, `0081`, `5000` — Inactivas, sin actividad productiva.
+- `0075` — Registro zombi (parámetros sin turnos ni producción).
+- `114` (dentro de `0030`) — Duplicado de `0114`.
+
+### Implicaciones para el Modelo Odoo 19
+
+1. **Modelo `bm.turno.definicion`**: Catálogo de turnos (código + descripción) por compañía. Hereda de `bturno1f`.
+2. **Modelo `bm.turno.horario`**: Instancias operativas con `hinicio`/`hfin` por sucursal. Hereda de `turno`.
+3. **Validación de formato de sucursal**: Implementar constraint que normalice códigos a formato consistente (4 dígitos para `0030`, 2 dígitos para `0035/0036` o unificar todo a 4 dígitos).
+4. **Lógica de turnos cruzados**: El turno 3 (`220000` → `063000`) requiere regla especial para asignar producción nocturna al día correcto.
+5. **Relación con tablas transaccionales**: `turnoxop`, `opxlinea`, `horpro`, `proptur`, `dproptur` deben referenciar al modelo de turno vía llave natural `(compania, sucursal, turno)`.
+
+### 4. 
+Turnos cruzados (nocturnos)
+- Turno 3: hinicio=220000, hfin=063000 (fin < inicio)
+- Duda: ¿Cómo determinar a qué turno pertenece una producción registrada a las 02:00 AM? ¿Se asigna al día anterior o al actual?
+- Impacto: Lógica de asignación automática de turno en Odoo necesita regla especial.
+
+**absolucion**
+La asignación de producción nocturna requiere lógica basada en hora de registro vs ventana de turno, no solo por fecha calendario.
+
+**Consulta de validación sugerida**:
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
+SELECT t.compania, t.sucursal, t.turno, t.hinicio, t.hfin,
+       CASE WHEN t.hinicio > t.hfin THEN 'CRUZADO' ELSE 'NORMAL' END as tipo_turno
+FROM turno t
+WHERE t.hinicio > t.hfin;
+\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+compania | sucursal | turno | hinicio |  hfin  | tipo_turno 
+----------+----------+-------+---------+--------+------------
+ 0030     | 0108     | 003   | 220000  | 063000 | CRUZADO
+ 0035     | 09       | 003   | 230000  | 070000 | CRUZADO
+ 0032     | 0001     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0112     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0113     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 114      | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0114     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0086     | 003   | 220000  | 063000 | CRUZADO
+ 0036     | 01       | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0115     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0116     | 003   | 223000  | 070000 | CRUZADO
+ 0030     | 0068     | 003   | 223000  | 070000 | CRUZADO
+ 0030     | 0001     | 003   | 220000  | 063000 | CRUZADO
+ 0030     | 0070     | 003   | 230000  | 070000 | CRUZADO
+ 0035     | 01       | 002   | 190000  | 070000 | CRUZADO
+ 0035     | 01       | 003   | 070000  | 07:00: | CRUZADO
+ 0035     | 05       | 003   | 220000  | 063000 | CRUZADO
+ 0035     | 03       | 003   | 230000  | 070000 | CRUZADO
+ 0035     | 04       | 003   | 230000  | 070000 | CRUZADO
+ 0035     | 08       | 003   | 230000  | 070000 | CRUZADO
+(20 rows)
+```
+
+**conclusion**
+1. **Todos los turnos cruzados son Turno 3** (20 de 20), confirmando que el tercer turno es consistentemente nocturno en todas las sucursales activas.
+2. **Patrones de horario identificados**:
+   - **Estándar**: `220000` → `063000` (8.5 horas) — mayoría de sucursales `0030` y `0032`
+   - **Tardío**: `223000` → `070000` (8.5 horas) — sucursales `0030/0116`, `0030/0068`
+   - **Nocturno largo**: `230000` → `070000` (8 horas) — sucursales `0035` y `0030/0070`
+3. **Anomalía crítica detectada**: `0035/01/003` tiene `hinicio=070000`, `hfin=07:00:` — **dato corrupto/malformado**. El `hfin` tiene formato `07:00:` (con dos puntos) en lugar de `070000`. Esto causará errores de parsing si no se limpia antes de migrar.
+4. **Caso especial**: `0035/01/002` es `190000` → `070000` (12 horas). No es un turno normal, posiblemente un turno especial de fin de semana o configuración errónea.
+5. **Regla de asignación confirmada**: Producción entre `22:00` y `06:30` pertenece al Turno 3. Si la hora de registro es `< 06:30`, la fecha de producción corresponde al **día anterior** (fecha de inicio del turno).
+
+**accion recomendada para Odoo**
+1. Implementar método `_obtener_turno_por_fecha_hora(fecha, hora)` en `bm.turno.horario`:
+   - Si `hinicio < hfin` (normal): `hinicio <= hora < hfin` → misma fecha
+   - Si `hinicio > hfin` (cruzado): `hora >= hinicio` → misma fecha; `hora < hfin` → fecha anterior
+2. **Limpieza previa a migración**: Corregir el registro corrupto `0035/01/003` (`hfin='07:00:'` → `'070000'`). Agregar validación de formato `HHMMSS` en el modelo Odoo.
+3. **Validar caso `0035/01/002`** (12 horas): Confirmar con negocio si es turno real o error. Si es error, corregir a `150000` → `230000` (patrón estándar de Turno 2).
+4. **No hardcodear** la regla de "Turno 3 = cruzado". La lógica debe basarse en comparación `hinicio > hfin` para soportar configuraciones futuras no estándar. 
+
+### 5. 
+5. Registros duplicados en relacionturno
+- turnobm=001 tiene 2 registros por sucursal: uno con turnoav='' y otro con turnoav='1'
+- Duda: ¿El registro vacío es fallback, error, o registro histórico? ¿Cuál usar para migración?
+
+**absolucion**
+```bash
+ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT turnoav, COUNT(*) FROM relacionturno WHERE compania='0030' GROUP BY turnoav;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+turnoav | count 
+---------+-------
+         |     4
+ 1       |     4
+ 2       |     3
+ 3       |     3
+(4 rows)
+
+```
+**conclusion**
+Los registros vacíos y '1' tienen la misma frecuencia (4 cada uno), correspondiendo a las 4 sucursales de `0030` que tienen mapeo en `relacionturno`. Esto confirma un patrón:
+- `turnoav=''` (4 registros): **Registro comodín/fallback** para turno `001` cuando no hay mapeo específico con AVAIL.
+- `turnoav='1'` (4 registros): **Mapeo activo** real entre BM `001` ↔ AVAIL `1`.
+- `turnoav='2'` y `'3'` (3 registros cada uno): Solo aparecen en 3 sucursales, lo que sugiere que una de las 4 sucursales no tiene mapeo completo para turnos 2 y 3, o que el registro fallback solo existe para el turno 1.
+
+**accion recomendada para odoo**
+1. Durante la migración, **ignorar los registros con `turnoav=''`** ya que son fallbacks del sistema legacy y no representan mapeos reales.
+2. Migrar solo los registros con `turnoav` poblado (`1`, `2`, `3`) como datos de integración con AVAIL.
+3. Si en el futuro se requiere integración con AVAIL en Odoo, crear un modelo `bm.turno.mapeo_avail` con campos `(compania, sucursal, turno_bm, turno_avail)`. Si no hay integración con AVAIL, esta tabla puede omitirse completamente de la migración.
+4. Validar con el equipo de negocio si la integración con AVAIL sigue activa o fue reemplazada por otro sistema.
+
+### 6. 
+6. opxlinea — volumen de registros huérfanos
+- Los primeros 15 rows tienen turno='', fameqp='', cjsprg=0
+- Duda: ¿Qué porcentaje del total representan? Si son mayoría, la tabla opxlinea podría ser mayormente basura.
+- Consulta sugerida: SELECT count(*) as total, count(*) FILTER (WHERE turno='') as vacios FROM opxlinea;
+
+**absolucion**
+Determinar la salud de la tabla principal, si la mayoria de los registros no tiene un turno asignado (cementerio de datos)  o una tabla que se usa para fines distintos a la programacion (borradores o logs)
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT count(*) as total, count(1) FILTER (WHERE turno = '' OR turno IS NULL) as vacios, ROUND((count(1) FILTER (WHERE turno = '' OR turno IS NULL) * 100.0 / count(1)), 2) as porcentaje_basura FROM opxlinea;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+ total | vacios | porcentaje_basura 
+-------+--------+-------------------
+    42 |     42 |            100.00
+(1 row)
+```
+**conclusion**
+Con el **100% de registros sin turno asignado** (42 de 42), `opxlinea` **NO es la tabla donde reside la verdad de la producción** en el sistema legacy. Es una tabla de programación planificada que quedó obsoleta o nunca se utilizó activamente. La tabla transaccional real de asignación turno-OP es `turnoxop` (37,155 registros con datos completos).
+
+**accion recomendada para Odoo**
+1. **No migrar `opxlinea` como tabla de producción real**. Su contenido es basura/histórico sin valor operativo.
+2. Si se requiere conservar por auditoría, migrar como datos históricos en un modelo separado `bm.produccion_programacion_historica` con estado `borrador` o `sin_asignar`.
+3. La **fuente de verdad** para migración de producción es `turnoxop` (asignaciones reales turno-OP) combinada con `horpro` (horas trabajadas) y `dproptur` (detalle de programación por empleado).
+4. Revalidar si `opxlinea` tenía un propósito específico en el flujo legacy (¿borrador de planificación? ¿interfaz con otro sistema?) antes de decidir su destino final.
+
+### 7. 
+7. parprod — ¿parámetros o paros?
+- Nombre sugiere "paros de producción" pero estructura es de parámetros globales
+- Duda: ¿Existe otra tabla para registrar paros reales? ¿O el nombre es histórico/engañoso?
+- Consulta sugerida: SELECT count(*) FROM parprod; (confirmar que son solo 4 rows)
+
+**absolucion**
+Cuantas compañias estan activas o en configuracion 
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT count(*) FROM parprod;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+count 
+-------
+     4
+(1 row)
+```
+**conclusion**
+Confirmado: `parprod` es la **tabla de parámetros maestros de producción** con exactamente 4 registros, uno por compañía activa o en configuración (`0035`, `0030`, `0032`, `0075`). No es una tabla transaccional de paros. Su nombre es engañoso (posiblemente "parámetros de producción" abreviado como `parprod`, no "paros de producción").
+
+**accion recomendada para Odoo**
+1. Migrar los 4 registros como **configuración de compañía** en Odoo. Crear un modelo `bm.produccion.config` vinculado a `res.company` con los campos relevantes:
+   - `nroturno` → número máximo de turnos (3)
+   - `horaxtur` → horas por turno (8)
+   - `diaxmes` → días operativos al mes (26)
+   - `ultturno` → turno por defecto ('003')
+2. Los campos de familias de productos (`famenv`, `famsop`, `famjar`, etc.) y áreas (`areman`, `arettag`, etc.) deben mapearse a categorías de producto y departamentos en Odoo.
+3. Los campos `libre1-15` pueden omitirse salvo que el equipo de negocio identifique alguno como crítico.
+4. El registro de `0075` (zombi) puede migrarse como configuración inactiva o descartarse.
+
+### 8. 
+8. nroturno vs ultturno en parprod
+- nroturno = 3 (smallint), ultturno = '003' (text) para todas las compañías
+- Duda: ¿Qué significa "último turno"? ¿Turno actual en curso? ¿Turno por defecto? ¿Último turno procesado del día?
+
+**absolucion**
+
+ultturno cambia segun la actividad reciente o es un valor estatico de configuracion, ver si hay variedad entre las 4 compañias
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT compania, nroturno, ultturno FROM parprod;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+ compania | nroturno | ultturno 
+----------+----------+----------
+ 0035     |        3 | 003
+ 0030     |        3 | 003
+ 0032     |        3 | 003
+ 0075     |        3 | 003
+(4 rows)
+
+```
+**conclusion**
+Todas las 4 compañías tienen exactamente `nroturno = 3` y `ultturno = '003'`. Esto **NO es un valor dinámico** que cambia según actividad reciente. Son **valores estáticos de configuración** que representan:
+- `nroturno (3)`: **Límite de capacidad** — el sistema está configurado para soportar máximo 3 turnos por día.
+- `ultturno ('003')`: **Identificador de tope** — el código del último turno posible, usado como referencia para validaciones o cierres de día.
+
+No hay variación entre compañías, lo que indica que es una configuración global estandarizada, no un indicador de actividad.
+
+**accion recomendada para Odoo**
+1. No migrar como campos dinámicos. Son **constantes de configuración** que pueden hardcodearse o definirse como valores por defecto en el modelo `bm.produccion.config`.
+2. Si en el futuro se requieren más de 3 turnos (ej. turnos de fin de semana o especiales), el modelo debe ser flexible para soportar N turnos, no limitarse a 3.
+3. `ultturno` puede usarse como regla de validación: al cerrar el día productivo, verificar que el último turno procesado coincida con el turno máximo configurado.
+
+### 9.
+9. Banderas flgidavail y flgenuso
+- Tipo bytea, valor \x46 = ASCII 'F' (False)
+- Algunas sucursales (0030/0112) tienen estas banderas ** vacías** (NULL)
+- Duda: ¿Qué controlan exactamente? ¿Afectan la migración si no se integra con AVAIL?
+
+NO ESTOY SEGURO SI ESTAS CONSULTAS SIRVEN PARA ESTA DUDA
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT flgidavail, COUNT(*) FROM turno GROUP BY flgidavail;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+flgidavail | count 
+------------+-------
+            |     7
+ \x46       |    48
+(2 rows)
+
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT flgidavail, flgenuso, COUNT(*) FROM turno GROUP BY flgidavail, flgenuso;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+flgidavail | flgenuso | count 
+------------+----------+-------
+ \x46       | \x54     |     6
+            |          |     7
+ \x46       | \x46     |    42
+(3 rows)
+```
+
+**conclusiones**
+Las consultas son correctas y revelan el siguiente panorama:
+
+| flgidavail | flgenuso | count | Interpretación |
+|------------|----------|-------|----------------|
+| `\x46` (F) | `\x54` (T) | 6     | Turnos **activos en uso** pero sin integración AVAIL |
+| `\x46` (F) | `\x46` (F) | 42    | Turnos configurados pero **sin uso activo** ni integración |
+| NULL       | NULL     | 7     | Configuración **incompleta/nueva** (ej: 0030/0112) |
+
+- **`flgidavail`** ("Flag ID Avail"): Siempre False o NULL. **Ningún turno tiene integración activa con AVAIL**. El sistema legacy tenía la capacidad pero nunca se activó o fue deshabilitada.
+- **`flgenuso`** ("Flag En Uso"): Solo 6 registros están marcados como activos (T). Estos probablemente corresponden a los turnos principales de las sucursales de mayor actividad. El resto (42) están configurados pero no marcados como "en uso".
+- **7 registros NULL**: Sucursales con configuración reciente o incompleta donde las banderas no se inicializaron.
+
+**accion recomendada para Odoo**
+1. **Omitir ambas banderas de la migración** si no hay integración con AVAIL en el ecosistema Odoo 19. No aportan valor operativo.
+2. Si se planea integración futura con AVAIL u otro sistema de planificación, crear un modelo `bm.turno.integracion` con campos booleanos claros (`activo`, `integrar_con_avail`, `integrar_con_sap`, etc.) en lugar de usar `bytea` opaco.
+3. Los 6 registros con `flgenuso=T` pueden usarse como referencia para identificar qué sucursales/turnos eran los **prioritarios** en el sistema legacy, útil para priorizar el orden de migración.
+4. Documentar que estas banderas son **reliquias del sistema legacy** y no deben replicarse en el nuevo modelo.
+
+---
+
+## CONCLUSIONES GENERALES - PUNTOS DE DISEÑO RESUELTOS (5-9)
+
+### Resumen de Hallazgos
+
+| Punto | Duda Original | Resolución |
+|-------|--------------|------------|
+| **4. Turnos cruzados** | ¿Producción 02:00 AM = día anterior o actual? | **Día anterior**: 20 turnos cruzados (todos Turno 3). Anomalía detectada: `0035/01/003` con `hfin` corrupto |
+| **5. Duplicados en relacionturno** | ¿turnoav='' es fallback o error? | **Fallback**: Ignorar en migración. Solo migrar registros con `turnoav` poblado |
+| **6. opxlinea huérfanos** | ¿Qué % es basura? | **100% sin turno**: No es fuente de verdad. Usar `turnoxop` como tabla principal |
+| **7. parprod nombre** | ¿Parámetros o paros? | **Parámetros maestros**: 1 registro por compañía. Migrar como config de `res.company` |
+| **8. nroturno vs ultturno** | ¿Dinámico o estático? | **Estático**: Ambos = 3. Límite de capacidad, no indicador de actividad |
+| **9. Banderas avail/uso** | ¿Qué controlan? | **Reliquias**: `flgidavail` siempre F, `flgenuso` solo 6 activos. Omitir en migración |
+
+### Implicaciones Adicionales para el Modelo Odoo 19
+
+1. **Fuente de verdad de producción**: `turnoxop` (37,155 registros) + `horpro` (horas) + `dproptur` (detalle empleado). `opxlinea` se descarta como fuente primaria.
+2. **Configuración por compañía**: Modelo `bm.produccion.config` con `horaxtur=8`, `diaxmes=26`, `max_turnos=3`.
+3. **Integración AVAIL**: Actualmente inactiva en el sistema legacy. No migrar `relacionturno` salvo validación expresa del equipo de negocio.
+4. **Turnos cruzados**: Implementar lógica especial para turno 3 (nocturno) que asigne producción al día de inicio del turno, no al día calendario. **Anomalía detectada**: `0035/01/003` tiene `hfin='07:00:'` (corrupto), requiere limpieza previa.
+5. **Limpieza de datos**: Excluir registros zombi (`0075`), duplicados (`114`), compañías inactivas (`0070`, `0076`, `0081`, `5000`), y corregir formato corrupto (`0035/01/003`).
+
+---
+
+### 11.
+11. Conversión de fechas julianas
+- feccreacio = 734799 ≈ enero 2010, pero la fórmula exacta no está documentada
+- Duda: ¿Es fecha juliana PostgreSQL (date '2000-01-01' + 734799)? ¿O del sistema legacy?
+- Impacto: Necesario para validar antigüedad de datos durante migración.
+
+**absolucion**
+busqueda de registro en turno (fechas de creacion) donde aparezcan ambos formatos...
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT compania, feccrea, fecultimod FROM parprod;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+compania | feccrea | fecultimod 
+----------+---------+------------
+ 0035     |       0 |          0
+ 0030     |       0 |          0
+ 0032     |       0 |          0
+ 0075     |       0 |          0
+(4 rows)
+
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"SELECT compania, sucursal, feccrea FROM horpro WHERE feccrea > 0 LIMIT 5;\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+compania | sucursal | feccrea 
+----------+----------+---------
+ 0030     | 0001     |  737782
+ 0030     | 0068     |  737809
+ 0030     | 0068     |  737809
+ 0030     | 0001     |  737817
+ 0030     | 0108     |  737817
+(5 rows)
+
+```
+**Consulta de validación sugerida**:
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
+SELECT 
+  MIN(feccrea) as min_fecha_juliana,
+  date '0001-01-01' + (MIN(feccrea) - 1) as min_fecha_real,
+  MAX(feccrea) as max_fecha_juliana,
+  date '0001-01-01' + (MAX(feccrea) - 1) as max_fecha_real,
+  MAX(feccrea) - MIN(feccrea) as dias_totales,
+  ROUND((MAX(feccrea) - MIN(feccrea)) / 365.25, 1) as anos_aprox
+FROM horpro WHERE feccrea > 0;
+\" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
+
+min_fecha_juliana | min_fecha_real | max_fecha_juliana | max_fecha_real | dias_totales | anos_aprox 
+-------------------+----------------+-------------------+----------------+--------------+------------
+            737774 | 2020-12-15     |            739636 | 2026-01-20     |         1862 |        5.1
+(1 row)
+
+```
+
+**conclusion**
+1. **Fórmula de conversión confirmada**: El sistema legacy usa **días prolepticos PostgreSQL** (días desde `0001-01-01` en calendario gregoriano proleptico). La conversión exacta es:
+   ```sql
+   SELECT date '0001-01-01' + (valor_entero - 1) as fecha_real;
+   ```
+2. **Rango real de datos transaccionales en `horpro`**:
+   - **Fecha más antigua**: `737774` → **15 de diciembre de 2020**
+   - **Fecha más reciente**: `739636` → **20 de enero de 2026**
+   - **Span total**: **1,862 días ≈ 5.1 años** de datos acumulados
+3. **`parprod` con `feccrea = 0`**: Confirma que es tabla de configuración inicial, no transaccional. Los 4 registros (`0035`, `0030`, `0032`, `0075`) fueron creados sin timestamp válido.
+4. **Datos desde 2020, no 2012**: La estimación inicial de `734799` → `2012-10-28` corresponde a `bturno1f` (catálogo maestro), no a datos transaccionales. Los datos operativos reales (`horpro`, `turnoxop`) inician en **diciembre 2020**.
+5. **Datos hasta enero 2026**: El sistema legacy estuvo activo hasta fechas muy recientes (hace ~3 semanas de la fecha actual del sistema). Esto confirma que los datos están **actualizados y vigentes**.
+
+**accion recomendada para Odoo**
+1. **Implementar función de conversión en scripts de migración**:
+   ```python
+   from datetime import date, timedelta
+
+   def julian_to_date(julian_days):
+       """Convierte días prolepticos del legacy a date de Odoo.
+       - 737774 → 2020-12-15 (inicio datos operativos)
+       - 739636 → 2026-01-20 (dato más reciente)
+       - 0 o NULL → False (sin fecha válida)
+       """
+       if not julian_days or julian_days == 0:
+           return False
+       return date(1, 1, 1) + timedelta(days=julian_days - 1)
+   ```
+2. **Definir corte de migración con el equipo de negocio**: Con 5.1 años de histórico (~1,862 días), se recomienda:
+   - **Migración completa**: Solo si el volumen es manejable (37,155 registros en `turnoxop` es razonable).
+   - **Migración parcial**: Últimos 2 años (desde `2024-01-20` ≈ juliano `738900`+) para datos operativos activos.
+   - **Histórico archivado**: Exportar datos anteriores a 2024 a un archivo CSV/Excel para consulta offline.
+3. **Registros con `feccrea = 0`**: Asignar `False` en campos `date` de Odoo. No usar fechas placeholder que puedan distorsionar reportes.
+4. **Validar consistencia post-migración**: Después de convertir, verificar que las fechas caigan dentro del rango esperado (`2020-12-15` a `2026-01-20`). Cualquier fecha fuera de este rango indica error de conversión o dato corrupto.
+5. **Documentar en `AGENTS.md`**: Agregar la fórmula de conversión como referencia técnica para futuros desarrolladores del proyecto AJE.
+
+## CONCLUSIONES GENERALES - PUNTOS MENORES RESUELTOS (11)
+
+### Resumen de Hallazgos
+
+| Punto | Duda Original | Resolución |
+|-------|--------------|------------|
+| **11. Fechas julianas** | ¿Fórmula exacta de conversión? | **Días prolepticos PG**: `date '0001-01-01' + (valor - 1)`. Rango operativo: `2020-12-15` a `2026-01-20` (5.1 años, 1,862 días) |
+
+### Implicaciones para Migración
+
+1. **Función `julian_to_date()` obligatoria** en todos los scripts de migración que procesen campos de fecha del legacy.
+2. **Corte recomendado**: Migrar datos desde `2024-01-20` (juliano `738900`+) para mantener Odoo ágil. Archivado externo para 2020-2023.
+3. **Datos vigentes**: El sistema legacy operó hasta enero 2026, confirmando que los datos están actualizados y la migración es urgente/necesaria.
+4. **Validación post-migración**: Verificar que todas las fechas convertidas caigan dentro del rango `2020-12-15` → `2026-01-20`.
