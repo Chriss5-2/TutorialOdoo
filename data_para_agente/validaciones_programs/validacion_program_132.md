@@ -664,3 +664,245 @@ SELECT * FROM turno LIMIT 10;
 - **Turnos cruzados**: El Tercer Turno siempre cruza medianoche (ej: `220000` → `063000`), lo que implica lógica especial para asignar producción al turno correcto cuando una OP inicia un día y termina al siguiente.
 - **Continuidad sin traslape**: Los horarios son contiguos (fin de uno = inicio del siguiente), sin gaps ni solapamientos.
 - **Banderas AVAIL**: `\x46` en `flgidavail` y `flgenuso` representa el byte ASCII `F` (False), indicando que estos turnos no están marcados para integración directa con AVAIL o están en modo de solo uso local.
+
+
+### Seccion: Auditoria de programacion operativa - Tabla OPXLINEA
+Se busca analizar la relacion entre la programacion de produccion, las lineas de equipo y los turnos para validar la integridad de los datos de manufactura en **opxlinea**
+
+```bash
+esau@DESKTOP-A3RPEKP:~/TutorialOdoo$ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASSWORD' && echo \"SELECT compania, sucursal, fecprg, turno, fameqp, lineqp, tipenvase, formato, sabor, cjsprg, cjseje FROM opxlinea LIMIT 15;\" | psql -h IP -U postgres -d mxbdaje_local"
+```
+
+```text
+compania | sucursal | fecprg | turno | fameqp | lineqp | tipenvase | formato | sabor | cjsprg | cjseje 
+----------+----------+--------+-------+--------+--------+-----------+---------+-------+--------+--------
+ 0100     | 01       | 735131 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 0001     | 735184 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 01       | 735436 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 02       | 735477 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 17       | 735493 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 15       | 735506 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 29       | 735506 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 26       | 735516 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 13       | 735738 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 11       | 735906 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 12       | 735967 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 03       | 736262 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 37       | 736381 |       |        |      0 |           |         |       |      0 |      0
+ 0002     | 25       | 736444 |       |        |      0 |           |         |       |      0 |      0
+ 0100     | 02       | 736564 |       |        |      0 |           |         |       |      0 |      0
+(15 rows)
+```
+
+
+**comentario**
+1. AGENTE COMPLETA TU ANALISIS
+
+### Seccion. Auditoria de tiempos improductivos - Tabla PARPROD
+Se busca inspeccionar la estructura y los datos de la tabla **parprod** para entender cómo se registran los paros de linea y su vinculacion con los turnos operativos.
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASSWORD' && echo '\d parprod; SELECT compania, sucursal, fecha, nroturno, ultturno FROM parprod LIMIT 10;' | psql -h IP -U postgres -d mxbdaje_local"
+```
+
+```text
+ Table "public.parprod"
+     Column     |       Type       | Collation | Nullable | Default 
+----------------+------------------+-----------+----------+---------
+ compania       | text             |           |          | 
+ codigo         | smallint         |           |          | 
+ inc            | text             |           |          | 
+ ind            | text             |           |          | 
+ despachoma     | text             |           |          | 
+ devdisp        | text             |           |          | 
+ devrechaza     | text             |           |          | 
+ dvc            | text             |           |          | 
+ trancontro     | text             |           |          | 
+ parteing       | text             |           |          | 
+ tranajting     | text             |           |          | 
+ tranajtsal     | text             |           |          | 
+ salmstr        | text             |           |          | 
+ mpi            | text             |           |          | 
+ mps            | text             |           |          | 
+ cliente        | integer          |           |          | 
+ reqprod        | text             |           |          | 
+ tranoprod      | text             |           |          | 
+ tranocomp      | text             |           |          | 
+ tranreq        | text             |           |          | 
+ trantra        | text             |           |          | 
+ actrcal        | text             |           |          | 
+ aprduc         | text             |           |          | 
+ feccrea        | integer          |           |          | 
+ horcrea        | text             |           |          | 
+ usucrea        | text             |           |          | 
+ fecultimod     | integer          |           |          | 
+ horultimod     | text             |           |          | 
+ usuultimod     | text             |           |          | 
+ nroturno       | smallint         |           |          | 
+ horaxtur       | smallint         |           |          | 
+ diaxmes        | smallint         |           |          | 
+ reqalmlog      | text             |           |          | 
+ famenv         | text             |           |          | 
+ famsop         | text             |           |          | 
+ famjar         | text             |           |          | 
+ aprobot        | text             |           |          | 
+ proreqpro      | smallint         |           |          | 
+ cotizacion     | text             |           |          | 
+ tipartser      | text             |           |          | 
+ almcont        | text             |           |          | 
+ devmer         | text             |           |          | 
+ protocolos     | text             |           |          | 
+ salidacc       | text             |           |          | 
+ falpro         | text             |           |          | 
+ sobpro         | text             |           |          | 
+ trnconmue      | text             |           |          | 
+ manejo_x_racks | bytea            |           |          | 
+ faccjs         | double precision |           |          | 
+ plapro         | text             |           |          | 
+ savvar         | text             |           |          | 
+ faminy         | text             |           |          | 
+ famazu         | text             |           |          | 
+ libre1         | text             |           |          | 
+ libre2         | text             |           |          | 
+ libre3         | text             |           |          | 
+ libre4         | text             |           |          | 
+ libre5         | text             |           |          | 
+ libre6         | text             |           |          | 
+ libre7         | text             |           |          | 
+ libre8         | double precision |           |          | 
+ libre9         | double precision |           |          | 
+ libre10        | double precision |           |          | 
+ libre11        | double precision |           |          | 
+ areman         | text             |           |          | 
+ aretag         | text             |           |          | 
+ areazu         | text             |           |          | 
+ arejara        | text             |           |          | 
+ arelvbt        | text             |           |          | 
+ arelifz        | text             |           |          | 
+ arebb          | text             |           |          | 
+ almvalr        | text             |           |          | 
+ almvalg        | text             |           |          | 
+ almnovg        | text             |           |          | 
+ almnovr        | text             |           |          | 
+ libre12        | text             |           |          | 
+ libre13        | text             |           |          | 
+ libre14        | text             |           |          | 
+ libre15        | text             |           |          | 
+ areemb         | text             |           |          | 
+ areiso         | text             |           |          | 
+ famemb         | text             |           |          | 
+ famiso         | text             |           |          | 
+ linmpmp        | text             |           |          | 
+ linmpis        | text             |           |          | 
+ linrefrp       | text             |           |          | 
+ linrefpg       | text             |           |          | 
+ lingesm        | text             |           |          | 
+ lingesmp       | text             |           |          | 
+ ctptvta        | text             |           |          | 
+ ctptded        | text             |           |          | 
+ ctptcob        | text             |           |          | 
+ ctptdif        | text             |           |          | 
+ tartprt        | text             |           |          | 
+ famjbag        | text             |           |          | 
+ famjbiso       | text             |           |          | 
+ arenect        | text             |           |          | 
+ famjnec        | text             |           |          | 
+ famnect        | text             |           |          | 
+ areminy        | text             |           |          | 
+ famminy        | text             |           |          | 
+ trasptin       | text             |           |          | 
+ vtamaqui       | text             |           |          | 
+ cdogtoind      | text             |           |          | 
+ sucprin        | text             |           |          | 
+ tramuest       | text             |           |          | 
+ trarqalm       | text             |           |          | 
+ almproc        | text             |           |          | 
+ trasalaut      | text             |           |          | 
+ traingaut      | text             |           |          | 
+ famresina      | text             |           |          | 
+ ultturno       | text             |           |          | 
+ diastkseg      | smallint         |           |          | 
+ actalmpro      | bytea            |           |          | 
+ tranvalno      | text             |           |          | 
+ tipartins      | text             |           |          | 
+ tipartemp      | text             |           |          | 
+ trandocref     | text             |           |          | 
+ tradevprov     | text             |           |          | 
+ almmp          | text             |           |          | 
+ almcon         | text             |           |          | 
+ almconref      | text             |           |          | 
+ almcongen      | text             |           |          | 
+ trasalcon      | text             |           |          | 
+ traingcon      | text             |           |          | 
+ almafijo       | text             |           |          | 
+ flgatepro      | bytea            |           |          | 
+Indexes:
+    "idx_172135_parprod1" UNIQUE, btree (compania, codigo)
+
+\d: extra argument "SELECT" ignored
+\d: extra argument "compania," ignored
+\d: extra argument "sucursal," ignored
+\d: extra argument "fecha," ignored
+\d: extra argument "nroturno," ignored
+\d: extra argument "ultturno" ignored
+\d: extra argument "FROM" ignored
+\d: extra argument "parprod" ignored
+\d: extra argument "LIMIT" ignored
+\d: extra argument "10;" ignored
+```
+**comentarios**
+
+
+### seccion : Auditoria de parametros de produccion - Tabla PARPROD (complemento de la seccion anterior)
+**objetivo** : inspeccionar la estructura tecnica y el contenido de la tabla **parprod** para identificar parametros operativos globales
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"SELECT compania, codigo, nroturno, ultturno, feccrea FROM parprod LIMIT 10;\" | psql -h IP -U postgres -d mxbdaje_local"
+```
+
+```text
+compania | codigo | nroturno | ultturno | feccrea 
+----------+--------+----------+----------+---------
+ 0035     |      1 |        3 | 003      |       0
+ 0030     |      1 |        3 | 003      |       0
+ 0032     |      1 |        3 | 003      |       0
+ 0075     |      1 |        3 | 003      |       0
+(4 rows)
+```
+
+**comentario**
+
+### Seccion : Alcance Operativo - Segmentacion de Turnos por Sucursal 
+**objetivo**: identificar el alcance real de las sucursales que tienen turnos configurados, con el fi de determinar la complejidad del despliegue multi-compañia en Odoo 19.
+
+```bash
+docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='PASS' && echo \"SELECT DISTINCT compania, sucursal FROM turno ORDER BY compania, sucursal;\" | psql -h IP -U postgres -d mxbdaje_local"
+```
+
+```text
+ compania | sucursal 
+----------+----------
+ 0030     | 0001
+ 0030     | 0068
+ 0030     | 0070
+ 0030     | 0086
+ 0030     | 0108
+ 0030     | 0112
+ 0030     | 0113
+ 0030     | 0114
+ 0030     | 0115
+ 0030     | 0116
+ 0030     | 114
+ 0032     | 0001
+ 0035     | 01
+ 0035     | 03
+ 0035     | 04
+ 0035     | 05
+ 0035     | 08
+ 0035     | 09
+ 0036     | 01
+(19 rows)
+
+```
+
+**comentario**
