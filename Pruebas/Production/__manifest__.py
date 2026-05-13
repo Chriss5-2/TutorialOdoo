@@ -7,12 +7,15 @@
     'data': [
         'security/ir.model.access.csv',
         'views/principal_menu.xml',
+        'views/program_132_turnos.xml',
+        'views/program_133_paradas.xml',
+        'views/program_135_mermas.xml',
+        'views/program_135_merma_registro.xml',
         'views/produccion_menu.xml',
         'views/planeamiento_menu.xml',
         'views/control_calidad_menu.xml',
         'views/costos_menu.xml',
         'views/costos_mantenimiento.xml',
-        'views/program_132_turnos.xml',
         'views/mantenimiento_menu.xml',
         'views/mantenimiento_clasificadores.xml',
         'views/mantenimiento_configuracion.xml',
@@ -23,8 +26,6 @@
         'views/produccion_reportes_insumos.xml',
         'views/utils_menu.xml',
         'views/program_162_formula_aprobacion.xml',
-        'views/program_133_paradas.xml',
-        'views/program_135_mermas.xml',
         'data/program_135_merma_data.xml',
     ]
 }

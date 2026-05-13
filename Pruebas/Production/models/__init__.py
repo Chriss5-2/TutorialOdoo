@@ -15,4 +15,6 @@ from . import program_132_produccion_config
 from . import program_133_paradas
 # program 135 - catalogo de tipos de mermas de produccion
 from . import program_135_mermas
+# program 135 - registro transaccional de mermas
+from . import program_135_merma_registro
 

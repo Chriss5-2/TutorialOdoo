@@ -273,3 +273,117 @@ Muestra el historial de aprobaciones por nivel. Se llena automaticamente al apro
 - **Vista:** Lista editable (`editable="bottom"`) para creacion rapida inline.
 - **Integracion futura:** Este modelo sera el insumo principal para el calculo de OEE y registro de tiempos muertos en Odoo 19.
 
+### Probando program # 135 en la UI Odoo
+
+#### 1. Tipos de Mermas (Catalogo)
+
+> **Que es:** Catalogo de tipos de mermas o desperdicios de produccion para clasificar perdidas durante la fabricacion.
+> **Donde:** `Mantenimiento → Clasificadores → Mermas` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Codigo | Texto | `EMP001`, `ETQ001`, `LIQ001` | ID unico del tipo de merma |
+| Descripcion | Texto | `Poly Stretch`, `Etiqueta TAG RFID` | Descripcion legible |
+| Categoria Global | Seleccion | `EMP` | `EMP`=Empaque, `ETQ`=Etiquetado, `LIQ`=Liquidos, `INS`=Insumos, `CAL`=Calidad, `FOR`=Cambio Formato, `OTR`=Otros |
+| Tipart Original (Legacy) | Texto | `026`, `001`, `008` | Codigo tipart del sistema legacy para trazabilidad |
+| Porcentaje Estandar (%) | Numero decimal | `13.85`, `16.91` | Porcentaje de merma esperado/permitido |
+| Recuperable | Boolean | `True`/`False` | Si la merma es recuperable/reutilizable |
+| Afecta Costo | Boolean | `True`/`False` | Si impacta el calculo de costos |
+| Activo | Boolean | `True` | Estado del tipo de merma |
+
+**Datos iniciales cargados (22 tipos basados en las 11 familias de `tipart` del legacy):**
+
+| Codigo | Descripcion | Categoria | Tipart | % Estandar | Recuperable |
+|---|---|---|---|---|---|
+| EMP001 | Poly Stretch | EMP | 026 | 13.85 | No |
+| EMP002 | Separador de Carton | EMP | 001 | 16.91 | No |
+| EMP003 | Bolsa de Polietileno | EMP | 001 | 16.91 | No |
+| EMP004 | Caja Corrugado | EMP | 001 | 16.91 | No |
+| EMP005 | Cinta Canela (Empacotecnia) | EMP | 001 | 16.91 | No |
+| ETQ001 | Etiqueta TAG RFID | ETQ | 025 | 16.34 | No |
+| ETQ002 | Pegamento para Etiquetadora | ETQ | 025 | 16.34 | No |
+| ETQ003 | Film Termoencogible 40cm | ETQ | 026 | 13.85 | No |
+| ETQ004 | Film Termoencogible 46cm | ETQ | 026 | 13.85 | No |
+| LIQ001 | Agua Tratada para Envasado | LIQ | 005 | 0.00 | Si |
+| LIQ002 | Alta Fructosa 55 | LIQ | 010 | 241.02 | No |
+| LIQ003 | Azucar Liquida | LIQ | 010 | 241.02 | No |
+| LIQ004 | Merma de Jarabe | LIQ | 003 | 0.39 | No |
+| LIQ005 | Merma de Base Terminada | LIQ | 008 | 4.65 | No |
+| LIQ006 | Merma de Base Intermedia | LIQ | 009 | 0.68 | No |
+| INS001 | Acido Citrico | INS | 008 | 4.65 | No |
+| INS002 | Benzoato de Sodio | INS | 008 | 4.65 | No |
+| INS003 | Citrato de Sodio | INS | 008 | 4.65 | No |
+| INS004 | Gas Carbonico | INS | 008 | 4.65 | No |
+| CAL001 | Merma por Pruebas de Calidad | CAL | - | 0.00 | No |
+| FOR001 | Merma por Cambio de Formato | FOR | - | 0.00 | No |
+| OTR001 | Otros | OTR | - | 0.00 | No |
+
+**Campos automaticos:**
+- `Nombre`: Se calcula como `{codigo} - {descripcion}`
+- `Fecha/Hora/Usuario Creacion`: Se llenan automaticamente al crear
+- `Fecha/Hora/Usuario Ultima Mod.`: Se actualizan automaticamente al editar
+
+**Filtros disponibles:**
+- **Activos:** Muestra solo los tipos activos
+- **Recuperables:** Muestra solo los tipos marcados como recuperables
+- **Group By Categoria:** Agrupa por categoria global (EMP, ETQ, LIQ, etc.)
+
+---
+
+#### 2. Registro de Mermas (Transaccional)
+
+> **Que es:** Registro de mermas reales por orden de produccion con calculo automatico de cantidad, porcentaje y costo.
+> **Donde:** `Producción → Ingreso de Paradas y Mermas → Ingreso de Mermas` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Fecha | Fecha | `2026-05-13` | Fecha del registro (default: hoy) |
+| Orden de Produccion | Texto | `PALP24000001` | Numero de OP asociada |
+| Tipo de Merma | Many2one (selector) | `EMP001 - Poly Stretch` | Referencia al catalogo del paso 1 |
+| Codigo Insumo | Numero entero | `36447` | Codigo del insumo que genero la merma |
+| Descripcion Insumo | Texto | `POLY STRECH` | Descripcion del insumo |
+| Linea | Texto | `L1`, `L4` | Linea de produccion donde ocurrio |
+| Turno | Texto | `T1`, `T3` | Turno donde ocurrio |
+| Cantidad Estandar | Numero decimal | `1000.0` | Cantidad segun receta |
+| Cantidad Real | Numero decimal | `1138.5` | Cantidad real consumida |
+| Cantidad Merma | Numero (computed) | `138.5` | `Real - Estandar` (automatico) |
+| Porcentaje Merma (%) | Numero (computed) | `13.85` | `(Merma / Estandar) * 100` (automatico) |
+| Costo Estandar Unitario | Numero decimal | `0.50` | Costo por unidad del insumo |
+| Costo Merma | Numero (computed) | `69.25` | `Cantidad Merma * Costo Estandar` (automatico) |
+| Observaciones | Texto | `Desperdicio en etiquetadora` | Causa y detalles |
+
+**Decoracion visual en la lista:**
+- **Rojo:** Porcentaje de merma > 10% (desviacion critica)
+- **Naranja:** Porcentaje de merma > 5% (desviacion moderada)
+
+**Filtros disponibles:**
+- **Hoy / Esta Semana / Este Mes:** Filtros temporales rapidos
+- **Merma Alta (>10%):** Muestra solo registros con desviacion critica
+- **Con Costo:** Muestra solo registros con costo de merma > 0
+- **Group By:** Tipo de Merma, OP, Fecha
+
+---
+
+#### Orden recomendado de uso
+
+1. **Primero:** Verificar los tipos de merma en **Tipos de Mermas** (`Mantenimiento → Clasificadores → Mermas`). Ya vienen 22 tipos pre-cargados. Agregar o modificar segun necesidad.
+2. **Segundo:** Registrar mermas reales en **Ingreso de Mermas** (`Producción → Ingreso de Paradas y Mermas → Ingreso de Mermas`).
+   - Seleccionar la OP, tipo de merma e insumo
+   - Ingresar cantidad estandar (de receta) y cantidad real (consumida)
+   - Odoo calcula automaticamente la merma, porcentaje y costo
+3. **Tercero:** Usar los filtros y group by para analizar:
+   - Que tipos de merma ocurren con mas frecuencia
+   - Que OPs tienen mayor desviacion
+   - Que insumos generan mas costo de merma
+
+---
+
+#### Notas tecnicas
+
+- **Origen:** Creado desde cero en Odoo 19 con enfoque hibrido. El catalogo legacy `tipmer` tenia 160 registros pero NINGUNO para Mexico. La tabla `mermastdmes` tenia 799,682 registros de analisis batch pero el campo `pormerma` era un factor no estandarizado (valores anomalous como 935%, 241%). Las tablas transaccionales (`merppro`, `merxlin`, `mcatppres`, `tproin1`) estaban vacias (0 registros).
+- **Menu Catalogo:** Secuencia 30 bajo `mantenimiento_clasificadores` (despues de Paradas secuencia 20).
+- **Menu Registro:** Bajo `Producción → Ingreso de Paradas y Mermas` (sequence 20, despues de Ingreso de Paradas).
+- **Vista:** Lista editable (`editable="bottom"`) para creacion rapida inline en ambos modelos.
+- **Campos legacy:** Se mantiene `tipart_original` para trazabilidad con los datos historicos de `mermastdmes`.
+- **Integracion futura:** Cuando se instalen los modulos `product` y `mrp`, los campos `insumo_codigo` y `nroop` podran reemplazarse por Many2one a `product.product` y `mrp.production` para obtener automaticamente costos y recetas.
+- **Impacto economico:** Los tipos EMP y ETQ representan el mayor costo de merma historico: Poly Stretch ($45.6M), Etiquetas ($34.5M), Separadores ($23.4M).
