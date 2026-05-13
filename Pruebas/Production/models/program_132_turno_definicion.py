@@ -105,3 +105,7 @@ class Program132TurnoDefinicion(models.Model):
         if not vals.get('horultmod'):
             vals['horultmod'] = fields.Datetime.now().strftime('%H%M%S')
         return super().write(vals)
+
+    def action_save_and_close(self):
+        self.ensure_one()
+        return {'type': 'ir.actions.act_window_close'}
