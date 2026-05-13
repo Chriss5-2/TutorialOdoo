@@ -169,3 +169,83 @@ Los comandos son exitosos, sin embargo el tiempo de conexion es infima e inestab
 
 Esto obliga a obtener informacion especifica para el agente.
 
+
+### Para las pruebas no se usa la conexion a la base de datos  sino el servicio DB 
+Con las credenciales cofigurados en odoo.conf
+
+### Cargar program # 132 
+```bash
+Ahora reinicia el contenedor y actualiza el modulo:
+docker compose down && docker compose up -d
+Luego en la UI o por linea de comandos:
+docker exec -it <container_name> odoo-bin -u Production -d <tu_base_de_datos> --stop-after-init
+Si el error persiste, verifica que los archivos esten montados correctamente en el contenedor:
+docker exec <container_name> ls -la /mnt/extra-addons/Production/models/
+Los 3 archivos deben aparecer:
+```
+enviar cambios
+```bash
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+```
+
+### El agente arruina la ui para aprobacion de formulas
+El commit bueno
+```bash
+git log --oneline -n 10
+d249f7a (HEAD -> features/produccion-modelos-logica) termina querys para program # 132
+6c58334 completa querys solicitados por el agente
+5ae7912 rastrea a data_para_agente
+bf6cc96 concluye querys pra precisar la descripcion de program # 132
+9ffc6ef completa y comprueba Aprobacion de formulas program # 162  ← este es el commit bueno
+4f7afae agrega docu program 162
+ef0dfa1 (origin/features/produccion-algunos-modelos, features/produccion-algunos-modelos) completa las vistas
+f752462 (origin/prod_module, prod_module) Merge pull request #1 from FloresVillar/feature/mexico-menu-structure
+6eb2034 implementa menu Mantenimiento
+885d832 agrega documentacion
+```
+buscar diferencias
+
+```bash
+ git diff 9ffc6ef -- Pruebas/Production/views/mantenimiento_menu.xml
+diff --git a/Pruebas/Production/views/mantenimiento_menu.xml b/Pruebas/Production/views/mantenimiento_menu.xml
+index fc38591..e54c98b 100644
+--- a/Pruebas/Production/views/mantenimiento_menu.xml
++++ b/Pruebas/Production/views/mantenimiento_menu.xml
+@@ -24,9 +24,4 @@
+                     name="Reportes" 
+                     parent="mant_menu"
+                     sequence="40"/>
+-        <menuitem   id="mant_aprobacion_formulas_menu"
+-                        name="Aprobacion de Formulas"
+-                        parent="mant_menu"
+-                        action="action_formula_solicitud"
+-                        sequence="50"/>
+ </odoo>
+\ No newline at end of file
+esau@DESKTOP-A3RPEKP:~/TutorialOdoo$ git diff 9ffc6ef -- Pruebas/Production/views/program_162_formula_aprobacion.xml
+diff --git a/Pruebas/Production/views/program_162_formula_aprobacion.xml b/Pruebas/Production/views/program_162_formula_aprobacion.xml
+index c464817..e1b856f 100644
+--- a/Pruebas/Production/views/program_162_formula_aprobacion.xml
++++ b/Pruebas/Production/views/program_162_formula_aprobacion.xml
+@@ -210,9 +210,9 @@
+ 
+         <!-- MENU ITEMS (Configuracion bajo Mantenimiento) -->
+         <menuitem id="menu_formula_config"
+-                  name="Configuracion Formulas"
++                  name="Aprobacion de Formulas"
+                   parent="mant_menu"
+-                  sequence="60"/>
++                  sequence="50"/>
+ 
+         <menuitem id="menu_formula_aprobador_config"
+                   name="Aprobadores"
+```
+
+reestablecer esos archivos a ese commit
+
+```bash
+git checkout 9ffc6ef -- Pruebas/Production/views/mantenimiento_menu.xml
+git checkout 9ffc6ef -- Pruebas/Production/views/program_162_formula_aprobacion.xml
+```
+
+### Probando program # 132 en la UI Odoo

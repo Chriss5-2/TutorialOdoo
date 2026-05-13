@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- TURNO DEFINICION list VIEW -->
+        <record id="view_turno_definicion_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.turno.definicion.list</field>
+            <field name="model">bm.ctl.produccion.turno.definicion</field>
+            <field name="arch" type="xml">
+                <list string="Catalogo de Turnos" editable="bottom">
+                    <field name="secuencia"/>
+                    <field name="codturno"/>
+                    <field name="descripcion"/>
+                    <field name="horainicio"/>
+                    <field name="horafin"/>
+                    <field name="esnocturno"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- TURNO DEFINICION FORM VIEW -->
+        <record id="view_turno_definicion_form" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.turno.definicion.form</field>
+            <field name="model">bm.ctl.produccion.turno.definicion</field>
+            <field name="arch" type="xml">
+                <form string="Definicion de Turno">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Informacion del Turno">
+                                <field name="codturno"/>
+                                <field name="descripcion"/>
+                                <field name="secuencia"/>
+                            </group>
+                            <group string="Horario">
+                                <field name="horainicio"/>
+                                <field name="horafin"/>
+                                <field name="esnocturno"/>
+                            </group>
+                            <group string="Auditoria">
+                                <field name="feccrea" readonly="1"/>
+                                <field name="horcrea" readonly="1"/>
+                                <field name="usucrea" readonly="1"/>
+                                <field name="fecultmod" readonly="1"/>
+                                <field name="horultmod" readonly="1"/>
+                                <field name="usuaulmod" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- TURNO DEFINICION ACTION -->
+        <record id="action_turno_definicion" model="ir.actions.act_window">
+            <field name="name">Catalogo de Turnos</field>
+            <field name="res_model">bm.ctl.produccion.turno.definicion</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea el catalogo de turnos de produccion
+                </p>
+                <p>
+                    Define los turnos globales (Dia, Tarde, Noche) con sus horarios estandar.
+                </p>
+            </field>
+        </record>
+
+        <!-- TURNO HORARIO list VIEW -->
+        <record id="view_turno_horario_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.turno.horario.list</field>
+            <field name="model">bm.ctl.produccion.turno.horario</field>
+            <field name="arch" type="xml">
+                <list string="Horarios por Sucursal" editable="bottom">
+                    <field name="sucursal"/>
+                    <field name="turno_id"/>
+                    <field name="codturno"/>
+                    <field name="horainicio"/>
+                    <field name="horafin"/>
+                    <field name="esnocturno"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- TURNO HORARIO ACTION -->
+        <record id="action_turno_horario" model="ir.actions.act_window">
+            <field name="name">Horarios por Sucursal</field>
+            <field name="res_model">bm.ctl.produccion.turno.horario</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Asigna turnos a cada sucursal
+                </p>
+                <p>
+                    Configura que turnos operan en cada sucursal con sus horarios especificos.
+                </p>
+            </field>
+        </record>
+
+        <!-- PRODUCCION CONFIG list VIEW -->
+        <record id="view_produccion_config_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.config.list</field>
+            <field name="model">bm.ctl.produccion.config</field>
+            <field name="arch" type="xml">
+                <list string="Configuracion de Produccion" editable="bottom">
+                    <field name="compania"/>
+                    <field name="fecha_inicial_prod"/>
+                    <field name="fecha_inicial_prod_display"/>
+                    <field name="turno_default_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- PRODUCCION CONFIG ACTION -->
+        <record id="action_produccion_config" model="ir.actions.act_window">
+            <field name="name">Configuracion de Produccion</field>
+            <field name="res_model">bm.ctl.produccion.config</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Configura los parametros globales de produccion
+                </p>
+                <p>
+                    Define fecha inicial de migracion, turno por defecto y otros parametros.
+                </p>
+            </field>
+        </record>
+
+        <!-- MENU ITEMS (bajo mant_clasificadores_menu → menu_mantenimiento_turnos) -->
+        <menuitem id="menu_turno_horario"
+                  name="Horarios por Sucursal"
+                  parent="menu_mantenimiento_turnos"
+                  action="action_turno_horario"
+                  sequence="10"/>
+
+        <menuitem id="menu_produccion_config"
+                  name="Configuracion Global"
+                  parent="menu_mantenimiento_turnos"
+                  action="action_produccion_config"
+                  sequence="20"/>
+    </data>
+</odoo>

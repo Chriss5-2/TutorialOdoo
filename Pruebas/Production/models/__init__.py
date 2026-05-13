@@ -6,4 +6,9 @@ from . import program_162_solicitud
 # al final lo que depende directamente de la solicitud
 from . import program_162_solicitud_line
 from . import program_162_firma
+# program 132 - turnos y configuracion de produccion
+from . import program_132_turno_definicion
+# dependen de la base  (horarios por sucursal  y config global)
+from . import program_132_turno_horario
+from . import program_132_produccion_config
 

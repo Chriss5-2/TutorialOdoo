@@ -1,5 +1,5 @@
 {
-    'name': 'Menus Production-Aprobacion formulas',
+    'name': 'Menus Production',
     'version': '1.0',
     'category': 'Production Testing',
     'summary': 'Menus Production Management',
@@ -12,6 +12,7 @@
         'views/control_calidad_menu.xml',
         'views/costos_menu.xml',
         'views/costos_mantenimiento.xml',
+        'views/program_132_turnos.xml',
         'views/mantenimiento_menu.xml',
         'views/mantenimiento_clasificadores.xml',
         'views/mantenimiento_configuracion.xml',
