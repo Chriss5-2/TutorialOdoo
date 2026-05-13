@@ -183,6 +183,8 @@ Si el error persiste, verifica que los archivos esten montados correctamente en 
 docker exec <container_name> ls -la /mnt/extra-addons/Production/models/
 Los 3 archivos deben aparecer:
 ```
+### Actualizar modulo de interes
+
 enviar cambios
 ```bash
 docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
@@ -249,3 +251,77 @@ git checkout 9ffc6ef -- Pruebas/Production/views/program_162_formula_aprobacion.
 ```
 
 ### Probando program # 132 en la UI Odoo
+
+#### 1. Catalogo de Turnos (Turno Definicion)
+
+> **Que es:** La definicion base de los turnos globales. Equivale a la tabla legacy `bturno1f`.
+> **Donde:** `Mantenimiento → Clasificadores → Turnos → Catalogo de Turnos` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Codigo Turno | Numero entero | `1`, `2`, `3` | ID unico del turno |
+| Descripcion | Texto | `PRIMER TURNO` | Nombre legible |
+| Secuencia | Numero entero | `10`, `20`, `30` | Orden visual (multiplos de 10) |
+| Hora Inicio | Texto `HHMMSS` | `063000` | Hora 24h sin separadores |
+| Hora Fin | Texto `HHMMSS` | `143000` | Si es menor que inicio = turno nocturno |
+
+**Datos reales de la BD legacy (compania 0030):**
+
+| Turno | Descripcion | Horario | Nocturno |
+|---|---|---|---|
+| 001 | PRIMER TURNO | 06:30 - 14:30 (`063000` - `143000`) | No |
+| 002 | SEGUNDO TURNO | 14:30 - 22:00 (`143000` - `220000`) | No |
+| 003 | TERCER TURNO | 22:00 - 06:30 (`220000` - `063000`) | Si (cruza dia) |
+
+- El campo `Es Nocturno` se calcula solo: si `Hora Inicio > Hora Fin` → `True`
+- Los campos de auditoria (Fecha Creacion, Hora Creacion, Usuario) se llenan automaticamente
+
+---
+
+#### 2. Horarios por Sucursal (Turno Horario)
+
+> **Que es:** Asigna cada turno a una sucursal/planta especifica con sus horarios. Equivale a la tabla legacy `turno`.
+> **Donde:** `Mantenimiento → Clasificadores → Turnos → Horarios por Sucursal` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Sucursal | Texto (codigo) | `0001`, `0068` | Codigo de planta/sucursal |
+| Turno | Many2one (selector) | Seleccionar de lista | Referencia al turno del paso 1 |
+
+**Campos automaticos** (se llenan desde el turno seleccionado via `related`): Codigo Turno, Hora Inicio, Hora Fin, Es Nocturno
+
+**Datos reales de la BD legacy:**
+
+| Sucursal | T1 | T2 | T3 |
+|---|---|---|---|
+| 0001 (Puebla) | 06:30-14:30 | 14:30-22:00 | 22:00-06:30 |
+| 0068 (Monterrey) | 06:30-14:30 | 14:30-22:00 | 22:00-06:30 |
+| 0108 | 06:30-14:30 | 14:30-22:00 | 22:00-06:30 |
+| 0009 (otra cmp) | 07:00-15:00 | 15:00-23:00 | 23:00-07:00 |
+
+Cada sucursal puede tener horarios distintos para el mismo turno.
+
+---
+
+#### 3. Configuracion Global (Produccion Config)
+
+> **Que es:** Parametros generales de produccion por compania.
+> **Donde:** `Mantenimiento → Clasificadores → Turnos → Configuracion Global` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Compania | Texto | `0030` | Codigo de compania (default `0030`) |
+| Fecha Inicial | Numero juliano | `739812` | Fecha desde la cual se consideran datos |
+| Turno por Defecto | Many2one (selector) | Seleccionar turno | Turno default para nuevas OP |
+
+**Fecha juliana:** Se calcula como `(dias_desde_1_ene_del_anio) + 730000`. El campo `Fecha Inicial` (Date) se muestra automaticamente para referencia.
+
+**Uso tipico:** Crear UN registro por compania con la fecha desde la cual quieres empezar a trabajar en el nuevo sistema.
+
+---
+
+#### Orden recomendado de ingreso
+
+1. **Primero:** Crear los 3 turnos base en **Catalogo de Turnos** (T1, T2, T3)
+2. **Segundo:** En **Horarios por Sucursal**, crear un registro por cada combinacion sucursal+turno que necesites
+3. **Tercero:** En **Configuracion Global**, crear el registro de compania con fecha inicial y turno default

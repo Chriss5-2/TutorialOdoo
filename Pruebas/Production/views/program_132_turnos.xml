@@ -130,16 +130,22 @@
         </record>
 
         <!-- MENU ITEMS (bajo mant_clasificadores_menu → menu_mantenimiento_turnos) -->
+        <menuitem id="menu_catalogo_turnos"
+                  name="Catalogo de Turnos"
+                  parent="menu_mantenimiento_turnos"
+                  action="action_turno_definicion"
+                  sequence="10"/>
+
         <menuitem id="menu_turno_horario"
                   name="Horarios por Sucursal"
                   parent="menu_mantenimiento_turnos"
                   action="action_turno_horario"
-                  sequence="10"/>
+                  sequence="20"/>
 
         <menuitem id="menu_produccion_config"
                   name="Configuracion Global"
                   parent="menu_mantenimiento_turnos"
                   action="action_produccion_config"
-                  sequence="20"/>
+                  sequence="30"/>
     </data>
 </odoo>

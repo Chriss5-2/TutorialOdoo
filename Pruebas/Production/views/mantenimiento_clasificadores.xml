@@ -4,7 +4,6 @@
     <menuitem   id="menu_mantenimiento_turnos"
                 name="Turnos"
                 parent="mant_clasificadores_menu"
-                action="action_turno_definicion"
                 sequence="10"/>
     <!-- TODO: Reemplazar por action="action_aje_paradas" -->
     <menuitem   id="menu_mantenimiento_paradas"

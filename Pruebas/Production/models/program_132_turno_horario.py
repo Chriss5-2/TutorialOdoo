@@ -9,7 +9,6 @@ class Program132TurnoHorario(models.Model):
 
     name = fields.Char(
         string='Nombre',
-        required=True,
         compute='_compute_name',
         store=True,
     )
