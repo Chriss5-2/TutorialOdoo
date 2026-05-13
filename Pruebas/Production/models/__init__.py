@@ -11,4 +11,8 @@ from . import program_132_turno_definicion
 # dependen de la base  (horarios por sucursal  y config global)
 from . import program_132_turno_horario
 from . import program_132_produccion_config
+# program 133 - catalogo de tipos de paradas de produccion
+from . import program_133_paradas
+# program 135 - catalogo de tipos de mermas de produccion
+from . import program_135_mermas
 

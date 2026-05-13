@@ -23,5 +23,8 @@
         'views/produccion_reportes_insumos.xml',
         'views/utils_menu.xml',
         'views/program_162_formula_aprobacion.xml',
+        'views/program_133_paradas.xml',
+        'views/program_135_mermas.xml',
+        'data/program_135_merma_data.xml',
     ]
 }
