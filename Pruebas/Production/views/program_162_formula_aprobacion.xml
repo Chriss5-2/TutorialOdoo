@@ -208,22 +208,23 @@
             </field>
         </record>
 
-        <!-- MENU ITEMS (Configuracion bajo Mantenimiento) -->
-        <menuitem id="menu_formula_config"
-                  name="Configuracion Formulas"
-                  parent="mant_menu"
-                  sequence="60"/>
+        <!-- MENU ITEMS (bajo mant_aprobacion_formulas_menu) -->
+        <menuitem id="menu_formula_solicitud"
+                  name="Aprobacion de Formulas"
+                  parent="mant_aprobacion_formulas_menu"
+                  action="action_formula_solicitud"
+                  sequence="10"/>
 
         <menuitem id="menu_formula_aprobador_config"
                   name="Aprobadores"
-                  parent="menu_formula_config"
+                  parent="mant_aprobacion_formulas_menu"
                   action="action_formula_aprobador_config"
-                  sequence="10"/>
+                  sequence="20"/>
 
         <menuitem id="menu_formula_firmas"
                   name="Historial de Firmas"
-                  parent="menu_formula_config"
+                  parent="mant_aprobacion_formulas_menu"
                   action="action_formula_firma"
-                  sequence="20"/>
+                  sequence="30"/>
     </data>
 </odoo>

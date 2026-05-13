@@ -27,6 +27,5 @@
         <menuitem   id="mant_aprobacion_formulas_menu"
                         name="Aprobacion de Formulas"
                         parent="mant_menu"
-                        action="action_formula_solicitud"
                         sequence="50"/>
 </odoo>
