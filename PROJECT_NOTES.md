@@ -325,3 +325,139 @@ Cada sucursal puede tener horarios distintos para el mismo turno.
 1. **Primero:** Crear los 3 turnos base en **Catalogo de Turnos** (T1, T2, T3)
 2. **Segundo:** En **Horarios por Sucursal**, crear un registro por cada combinacion sucursal+turno que necesites
 3. **Tercero:** En **Configuracion Global**, crear el registro de compania con fecha inicial y turno default
+
+---
+
+### Probando program # 162 en la UI Odoo
+
+#### 1. Aprobacion de Formulas (Solicitud)
+
+> **Que es:** Solicitud de activacion/modificacion de formulas de fabricacion con flujo de aprobacion multinivel. Equivale a las tablas legacy `csolactfor` (header) + `dsolactfor` (lineas).
+> **Donde:** `Mantenimiento → Aprobacion de Formulas → Aprobacion de Formulas`
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Numero Documento | Texto (auto) | `AFOR/00001` | Secuencia automatica |
+| Compania | Texto | `0030` | Codigo de compania (default `0030`) |
+| Transaccion | Texto | `AFOR` | Tipo de transaccion (default `AFOR`) |
+| Fecha | Numero juliano | `739812` | Fecha de la solicitud |
+| Solicitante | Numero (ID Empleado) | `1708248` | ID del empleado que solicita |
+| Nivel Aprobacion | Numero entero | `1`, `2`, `3` | Nivel actual del flujo |
+| Aprobador Actual | Numero (ID Empleado) | `6881` | Quien debe aprobar en este nivel |
+| Status Aprobacion | Seleccion | `P` (Pendiente) | `P`=Pendiente, `A`=Aprobado, `R`=Rechazado, `C`=En Curso |
+| Estado | Seleccion (statusbar) | `Borrador` | `draft` → `pending` → `approved`/`rejected`/`cancelled` |
+
+**Botones del flujo (aparecen segun el estado):**
+
+| Boton | Visible cuando | Accion |
+|---|---|---|
+| Enviar a Aprobacion | `state = draft` | Cambia a `pending`, inicia flujo |
+| Aprobar | `state = pending` | Cambia a `approved`, registra fecha/hora |
+| Rechazar | `state = pending` | Cambia a `rejected` |
+| Cancelar | `state = draft` o `pending` | Anula la solicitud |
+| Reiniciar a Borrador | `state = rejected` o `cancelled` | Vuelve a `draft` |
+
+**Pestana "Lineas de Formula" (editable inline):**
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Sucursal Formula | Texto | `0001` | Planta donde se aplica |
+| Articulo (SKU) | Numero decimal | `524121.0` | Producto terminado |
+| Insumo (Material) | Numero decimal | `7177.0` | Material de la formula |
+| Linea | Texto | `L1` | Linea de produccion |
+| Factor Conversion | Numero decimal | `18.8` | Factor de conversion |
+| Accion | Seleccion | `N`, `M`, `E` | `N`=Nuevo, `M`=Modificar, `E`=Eliminar |
+| Nivel Aprobacion | Numero entero | `1` | Nivel requerido |
+
+**Pestana "Firmas de Aprobacion" (solo lectura):**
+Muestra el historial de aprobaciones por nivel. Se llena automaticamente al aprobar/rechazar.
+
+**Datos reales de la BD legacy (`forfab`):**
+
+| Articulo | Material | Aprobador | Fecha Aprob | Hora Aprob |
+|---|---|---|---|---|
+| 524121 | 7177 | 1724308 | 0 | 000000 |
+| 517262 | 8 | 1724308 | 739632 | 101951 |
+| 81388 | 71741 | 29750 | 739458 | 112102 |
+
+- En el legacy, muchas aprobaciones tienen fecha/hora vacias (solo se registra el ID del aprobador)
+- En Odoo 19, al hacer clic en "Aprobar", se registra automaticamente fecha juliana y hora
+
+---
+
+#### 2. Configuracion de Aprobadores
+
+> **Que es:** Define quien puede aprobar en cada nivel del flujo. Equivale a la tabla legacy `aprfor1f`.
+> **Donde:** `Mantenimiento → Aprobacion de Formulas → Aprobadores` (lista editable)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Compania | Texto | `0030` | Codigo de compania (default `0030`) |
+| Transaccion | Texto | `AFOR` | Tipo de transaccion (default `AFOR`) |
+| Nivel | Numero entero | `1`, `2`, `3` | Nivel de aprobacion |
+| Tipo Aprobacion | Seleccion | `L` (Lineal), `P` (Paralelo) | `L`=secuencial, `P`=simultaneo |
+| Aprobador | Numero (ID Empleado) | `1708248` | ID del empleado aprobador |
+| Estado | Seleccion | `A` (Activo), `I` (Inactivo) | Estado del configuracion |
+
+**Tipos de aprobacion:**
+- **Lineal (L):** Los niveles se aprueban en secuencia (1 → 2 → 3). Cada nivel debe aprobar antes de pasar al siguiente.
+- **Paralelo (P):** Los niveles pueden aprobar simultaneamente. No hay orden obligatorio.
+
+**Datos reales de la BD legacy (`aprfor1f`):**
+
+| Compania | Transaccio | Nivel | Tipaprob | Aprobador | Estado |
+|---|---|---|---|---|---|
+| 0030 | AFOR | 1 | L | 1708248 | A |
+| 0030 | AFOR | 2 | L | 6881 | A |
+| 0030 | AFOR | 3 | L | 29750 | A |
+
+---
+
+#### 3. Historial de Firmas
+
+> **Que es:** Trazabilidad completa de todas las aprobaciones/rechazos. Equivale a la tabla legacy `taprform1f`.
+> **Donde:** `Mantenimiento → Aprobacion de Formulas → Historial de Firmas`
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Numero Documento | Texto | `AFOR/00001` | Referencia a la solicitud |
+| Nivel Aprobacion | Numero entero | `1`, `2`, `3` | Nivel donde se firmo |
+| Empleado Autorizador | Numero (ID Empleado) | `1708248` | Quien firmo |
+| Fecha Autorizacion | Numero juliano | `739812` | Fecha de la firma |
+| Hora Autorizacion | Texto `HHMMSS` | `143000` | Hora de la firma |
+| Status Aprobacion | Seleccion | `A`, `R`, `P` | `A`=Aprobado, `R`=Rechazado, `P`=Pendiente |
+| Observaciones | Texto | `Formula correcta` | Comentarios del aprobador |
+
+**Nota:** Esta vista es de solo lectura. Los registros se crean automaticamente cuando se aprueba/rechaza una solicitud desde la vista de "Aprobacion de Formulas".
+
+---
+
+#### Orden recomendado de uso
+
+1. **Primero:** Configurar los aprobadores en **Configuracion de Aprobadores** (quien aprueba en cada nivel)
+2. **Segundo:** Crear una nueva solicitud en **Aprobacion de Formulas**
+   - Llenar datos generales (compania, fecha, solicitante)
+   - Agregar lineas de formula en la pestana "Lineas de Formula"
+3. **Tercero:** Enviar a aprobacion con el boton "Enviar a Aprobacion"
+4. **Cuarto:** El aprobador correspondiente abre la solicitud y hace clic en "Aprobar" o "Rechazar"
+5. **Quinto:** Consultar el **Historial de Firmas** para ver la trazabilidad completa
+
+---
+
+#### Flujo de estados visual
+
+```
+[Borrador] → (Enviar a Aprobacion) → [En Aprobacion] → (Aprobar) → [Aprobado]
+                                                    → (Rechazar) → [Rechazado]
+                                                    → (Cancelar) → [Cancelado]
+
+[Rechazado] → (Reiniciar a Borrador) → [Borrador]
+[Cancelado] → (Reiniciar a Borrador) → [Borrador]
+```
+
+**Colores en la lista de solicitudes:**
+- **Azul claro:** Borrador (`draft`)
+- **Amarillo:** En Aprobacion (`pending`)
+- **Verde:** Aprobado (`approved`)
+- **Rojo:** Rechazado o Cancelado (`rejected`, `cancelled`)
+
