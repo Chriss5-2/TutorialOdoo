@@ -1,10 +1,6 @@
-## 1. EXPLORACIÓN DE DICCIONARIO DE DATOS - GESTIÓN DE PARADAS
+### SECCIÓN: EXPLORACIÓN DE DICCIONARIO DE DATOS - GESTIÓN DE PARADAS
+Ejecución de consulta de introspección sobre el catálogo de PostgreSQL para identificar las tablas asociadas a la gestión de paradas, tiempos muertos y OEE dentro del esquema público, con el fin de mapear la estructura de persistencia en `mxbdaje_local`.
 
-**Objetivo:** Ejecutar consulta de introspección sobre el catálogo de PostgreSQL para identificar las tablas asociadas a la gestión de paradas, tiempos muertos y OEE dentro del esquema público, con el fin de mapear la estructura de persistencia en `mxbdaje_local`.
-
-### 1.1 Consulta: Tablas relacionadas con paradas
-
-**Query 1.1.1** — Búsqueda de tablas con nombres tipo parada/paro/downtime:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT tablename 
@@ -14,33 +10,20 @@ AND (tablename ILIKE '%parada%' OR tablename ILIKE '%paro%' OR tablename ILIKE '
 ORDER BY tablename;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  tablename 
 -----------
  agrparoee
 (1 row)
 ```
-
-**Hallazgo 1.1.1:** Se ha identificado una única tabla `agrparoee` que podría estar relacionada con paros de OEE. Las tablas esperadas como `bparada1f` o `mparada1f` (siguiendo el patrón de `bturno1f`) no existen, lo que sugiere que el catálogo de tipos de paradas nunca se implementó operativamente.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 1
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 1 sola tabla identificada: `agrparoee` | 1.1.1 | No existe catálogo maestro de paradas; módulo debe crearse desde cero |
+**Comentario de Hallazgo**:
+Se ha identificado una única tabla `agrparoee` que podría estar relacionada con paros de OEE. Es necesario inspeccionar su estructura y contenido para entender su propósito. Las tablas esperadas como `bparada1f` o `mparada1f` (siguiendo el patrón de `bturno1f`) no existen.
 
 ---
 
-## 2. AUDITORÍA DE INTEGRIDAD REFERENCIAL - CAMPOS DE PARADAS
+### SECCIÓN: AUDITORÍA DE INTEGRIDAD REFERENCIAL - CAMPOS DE PARADAS
+Inspección de todas las columnas del esquema público que contienen referencias a "parada", "paro", "motivo" o "causa" para identificar dependencias en tablas transaccionales, de líneas de producción o de eficiencia, asegurando el rastreo de la persistencia de tiempos muertos.
 
-**Objetivo:** Inspeccionar todas las columnas del esquema público que contienen referencias a "parada", "paro", "motivo" o "causa" para identificar dependencias en tablas transaccionales, de líneas de producción o de eficiencia, asegurando el rastreo de la persistencia de tiempos muertos.
-
-### 2.1 Consulta: Columnas relacionadas con paradas en todo el esquema
-
-**Query 2.1.1** — Barrido de columnas con patrón parada/paro/motivo/causa:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT table_name, column_name, data_type 
@@ -50,7 +33,6 @@ AND table_schema = 'public'
 ORDER BY table_name, column_name;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
           table_name          |   column_name   |    data_type     
 ------------------------------+-----------------+------------------
@@ -61,8 +43,8 @@ ORDER BY table_name, column_name;
  ws_customer_abc              | motivosolicitud | text
 (151 rows)
 ```
-
-**Hallazgo 2.1.1:** El barrido revela 151 columnas relacionadas con "motivo" distribuidas en tablas de ventas, contabilidad, almacén y producción, pero **ninguna específica de paradas de producción**. Los hallazgos clave son:
+**Comentario de Hallazgo**:
+El barrido revela 151 columnas relacionadas con "motivo" distribuidas en tablas de ventas, contabilidad, almacén y producción, pero **ninguna específica de paradas de producción**. Los hallazgos clave son:
 - `prgopdet.asigparada` (boolean): Flag que indica si una OP tiene paradas asignadas, no el tipo de parada
 - `tproin1.motivobs` (bytea): Motivo de observación en protocolos de producción, no es un catálogo
 - `bmotiv1f`: Tabla maestra de motivos contables/financieros (3,215 registros), no aplica a paradas de producción
@@ -70,27 +52,12 @@ ORDER BY table_name, column_name;
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 2
+### SECCIÓN: ANÁLISIS DE ESTRUCTURA DDL - TABLA `agrparoee` (PAROS OEE)
+Inspección de la definición técnica de `agrparoee` para identificar su estructura, relación con OEE y contenido real.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 151 columnas con "motivo" pero ninguna de paradas de producción | 2.1.1 | No hay catálogo de tipos de paradas; crear modelo nuevo |
-| 2 | `prgopdet.asigparada` es flag boolean, no referencia a tipo | 2.1.1 | Odoo debe implementar Many2one a catálogo de paradas |
-| 3 | `bmotiv1f` es de motivos contables, no paradas | 2.1.1 | No reutilizar; crear catálogo independiente |
-
----
-
-## 3. ANÁLISIS DE ESTRUCTURA DDL - TABLA `agrparoee` (PAROS OEE)
-
-**Objetivo:** Inspeccionar la definición técnica de `agrparoee` para identificar su estructura, relación con OEE y contenido real.
-
-### 3.1 Consulta: Estructura y datos de `agrparoee`
-
-**Query 3.1.1** — Describir estructura y muestrear datos:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agrparoee; SELECT * FROM agrparoee LIMIT 20; SELECT count(*) FROM agrparoee;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                Table "public.agrparoee"
   Column   |  Type   | Collation | Nullable | Default 
@@ -108,8 +75,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agrp
  ulthormod | text    |           |          | 
  ultusumod | text    |           |          | 
  tipenv    | text    |           |          | 
- Indexes:
-     "idx_163311_agrparoee_1" UNIQUE, btree (compania, codigo, codagrup)
+Indexes:
+    "idx_163311_agrparoee_1" UNIQUE, btree (compania, codigo, codagrup)
 
  compania | codpar | correl | codigo | codagrup | estado | feccrea | horcrea | usucrea | ultfecmod | ulthormod | ultusumod | tipenv 
 ----------+--------+--------+--------+----------+--------+---------+---------+---------+-----------+-----------+-----------+--------
@@ -120,8 +87,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agrp
      0
 (1 row)
 ```
-
-**Hallazgo 3.1.1:** La tabla `agrparoee` está **completamente vacía** (0 registros). Su estructura sugiere que estaba diseñada para:
+**Comentario de Hallazgo**:
+La tabla `agrparoee` está **completamente vacía** (0 registros). Su estructura sugiere que estaba diseñada para:
 - `codpar`: Código de parada
 - `codagrup`: Código de agrupación (relación con `agrupoe`)
 - `codigo`: Código único compuesto
@@ -131,27 +98,12 @@ El índice único `(compania, codigo, codagrup)` indica que estaba pensada para 
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 3
+### SECCIÓN: ANÁLISIS DE TABLAS OEE - `agrupoe` Y `agrupoe1` (CLASIFICACIÓN JERÁRQUICA)
+Inspección de tablas relacionadas con agrupaciones de OEE que podrían contener la clasificación jerárquica de paradas (global/detalle mencionada en programas #231 y #232).
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `agrparoee` tiene 0 registros | 3.1.1 | Sin datos que migrar; diseñar catálogo desde cero |
-| 2 | Estructura con `codpar`, `codagrup`, `tipenv` | 3.1.1 | Patrón útil para diseño: código + agrupación + filtro |
-| 3 | Índice único compuesto (compania, codigo, codagrup) | 3.1.1 | Odoo debe usar sql_constraint similar |
-
----
-
-## 4. ANÁLISIS DE TABLAS OEE - `agrupoe` Y `agrupoe1` (CLASIFICACIÓN JERÁRQUICA)
-
-**Objetivo:** Inspeccionar tablas relacionadas con agrupaciones de OEE que podrían contener la clasificación jerárquica de paradas (global/detalle mencionada en programas #231 y #232).
-
-### 4.1 Consulta: Estructura y datos de `agrupoe` y `agrupoe1`
-
-**Query 4.1.1** — Describir estructura y contar registros:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agrupoee; \d agrupoee1; SELECT * FROM agrupoee LIMIT 10; SELECT * FROM agrupoee1 LIMIT 10; SELECT count(*) FROM agrupoee; SELECT count(*) FROM agrupoee1;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                 Table "public.agrupoee"
    Column    |  Type   | Collation | Nullable | Default 
@@ -167,8 +119,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agru
  ultfecmod   | integer |           |          | 
  ulthormod   | text    |           |          | 
  ultusumod   | text    |           |          | 
- Indexes:
-     "idx_163316_agrupoee_1" UNIQUE, btree (compania, codagrup)
+Indexes:
+    "idx_163316_agrupoee_1" UNIQUE, btree (compania, codagrup)
 
                 Table "public.agrupoee1"
    Column    |  Type   | Collation | Nullable | Default 
@@ -183,8 +135,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agru
  ultfecmod   | integer |           |          | 
  ulthormod   | text    |           |          | 
  ultusumod   | text    |           |          | 
- Indexes:
-     "idx_163321_agrupoee1_1" UNIQUE, btree (compania, codsubagrup)
+Indexes:
+    "idx_163321_agrupoee_1" UNIQUE, btree (compania, codsubagrup)
 
  count 
 -------
@@ -196,8 +148,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agru
      0
 (1 row)
 ```
-
-**Hallazgo 4.1.1:** Ambas tablas están **completamente vacías** (0 registros cada una). Su estructura revela una clasificación jerárquica diseñada pero nunca implementada:
+**Comentario de Hallazgo**:
+Ambas tablas están **completamente vacías** (0 registros cada una). Su estructura revela una clasificación jerárquica diseñada pero nunca implementada:
 - **`agrupoe`**: Tabla padre con `codagrup` (código de grupo) y `codsubagrup` (referencia a subgrupo)
 - **`agrupoe1`**: Tabla hija con `codsubagrup` como clave primaria
 - **Patrón esperado**: Código Global (agrupoe) → Código Detalle (agrupoe1) → Parada específica (agrparoee)
@@ -205,27 +157,12 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d agru
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 4
+### SECCIÓN: ANÁLISIS DE TABLA `mtiempoi1f` (TIEMPOS IMPRODUCTIVOS)
+Inspección de tabla que podría contener tiempos improductivos o paradas de producción.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `agrupoe` y `agrupoe1` tienen 0 registros | 4.1.1 | Sin datos que migrar; crear jerarquía nueva |
-| 2 | Patrón padre-hijo: grupo → subgrupo → parada | 4.1.1 | Odoo puede usar modelo con parent_id (Many2one self-referencia) |
-| 3 | Estructura huérfana sin datos operativos | 4.1.1 | Diseño legacy no se operó; implementar desde cero |
-
----
-
-## 5. ANÁLISIS DE TABLA `mtiempoi1f` (TIEMPOS IMPRODUCTIVOS)
-
-**Objetivo:** Inspeccionar tabla que podría contener tiempos improductivos o paradas de producción.
-
-### 5.1 Consulta: Estructura y datos de `mtiempoi1f`
-
-**Query 5.1.1** — Describir estructura y contar registros:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d mtiempoi1f; SELECT * FROM mtiempoi1f LIMIT 10; SELECT count(*) FROM mtiempoi1f;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                Table "public.mtiempoi1f"
   Column   |   Type   | Collation | Nullable | Default 
@@ -240,9 +177,9 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d mtie
  ultfecmod | integer  |           | not null | 
  ulthormod | text     |           | not null | 
  ultusumod | text     |           | not null | 
- Indexes:
-     "idx_171513_ixn_mtiempoi1l1" UNIQUE, btree (pais, viaembq)
-     "idx_171513_mtiempoi1l1" UNIQUE, btree (pais, viaembq)
+Indexes:
+    "idx_171513_ixn_mtiempoi1l1" UNIQUE, btree (pais, viaembq)
+    "idx_171513_mtiempoi1l1" UNIQUE, btree (pais, viaembq)
 
  pais | viaembq | desde | hasta | feccrea | horcrea | usucrea | ultfecmod | ulthormod | ultusumod 
 ------+---------+-------+-------+---------+---------+---------+-----------+-----------+-----------
@@ -253,30 +190,17 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d mtie
      0
 (1 row)
 ```
-
-**Hallazgo 5.1.1:** La tabla `mtiempoi1f` está vacía y su estructura (`pais`, `viaembq`, `desde`, `hasta`) indica que es de **tiempos de embarque/logística**, no de paradas de producción. No aplica para el programa #133.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 5
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `mtiempoi1f` vacía, es de logística/embarque | 5.1.1 | No aplica; excluir del módulo de paradas |
+**Comentario de Hallazgo**:
+La tabla `mtiempoi1f` está vacía y su estructura (`pais`, `viaembq`, `desde`, `hasta`) indica que es de **tiempos de embarque/logística**, no de paradas de producción. No aplica para el programa #133.
 
 ---
 
-## 6. ANÁLISIS DE TABLA `prgopdet` (PROGRAMACIÓN DE OP CON ASIGPARADA)
+### SECCIÓN: ANÁLISIS DE TABLA `prgopdet` (PROGRAMACIÓN DE OP CON ASIGPARADA)
+Inspección de tabla transaccional que tiene campo `asigparada` para entender cómo se manejan las paradas en la programación de órdenes de producción.
 
-**Objetivo:** Inspeccionar tabla transaccional que tiene campo `asigparada` para entender cómo se manejan las paradas en la programación de órdenes de producción.
-
-### 6.1 Consulta: Estructura y muestreo de `prgopdet`
-
-**Query 6.1.1** — Describir estructura y muestrear campos de parada/merma:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d prgopdet; SELECT compani, sucursal, turno, asigparada, asigmerma FROM prgopdet LIMIT 20; SELECT count(*) FROM prgopdet;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                      Table "public.prgopdet"
     Column    |       Type       | Collation | Nullable | Default 
@@ -296,22 +220,22 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d prgo
  asigparada   | boolean          |           | not null | 
  asigmerma    | boolean          |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_172573_prgopdetl1" UNIQUE, btree (compani, sucursal, nroop, turno, prioridad)
+Indexes:
+    "idx_172573_prgopdetl1" UNIQUE, btree (compani, sucursal, nroop, turno, prioridad)
 
  compani | sucursal | turno | asigparada | asigmerma 
 ---------+----------+-------+------------+-----------
-  0100    | 01       |       | f          | f
-  0002    | 0001     |       | f          | f
-  ... [20 rows] ...
+ 0100    | 01       |       | f          | f
+ 0002    | 0001     |       | f          | f
+ ... [20 rows] ...
 
  count 
 -------
-  53259
+ 53259
 (1 row)
 ```
-
-**Hallazgo 6.1.1:** La tabla `prgopdet` tiene **53,259 registros** y campos `asigparada` y `asigmerma` (boolean), pero:
+**Comentario de Hallazgo**:
+La tabla `prgopdet` tiene **53,259 registros** y campos `asigparada` y `asigmerma` (boolean), pero:
 - Es una tabla de **programación de órdenes de producción**, no un catálogo de tipos de paradas
 - Los campos son **flags** (True/False) que indican si una OP tiene paradas o mermas asignadas
 - No hay referencia a un tipo de parada específico, solo un indicador binario
@@ -319,23 +243,9 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d prgo
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 6
+### SECCIÓN: BÚSQUEDA DE TABLAS MAESTRAS DE PRODUCCIÓN
+Verificación de tablas maestras que puedan contener tipos de paradas, siguiendo el patrón de `bturno1f` (maestra de turnos).
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `prgopdet` tiene 53,259 registros con flag `asigparada` | 6.1.1 | Flag boolean insuficiente; Odoo necesita Many2one a tipo de parada |
-| 2 | Mayoría de registros con `asigparada = f` | 6.1.1 | Pocas OP tenían paradas asignadas en legacy |
-| 3 | Sin referencia a tipo específico de parada | 6.1.1 | Implementar relación Many2one desde OP a catálogo de paradas |
-
----
-
-## 7. BÚSQUEDA DE TABLAS MAESTRAS DE PRODUCCIÓN
-
-**Objetivo:** Verificar tablas maestras que puedan contener tipos de paradas, siguiendo el patrón de `bturno1f` (maestra de turnos).
-
-### 7.1 Consulta: Tablas maestras patrón `b*1f` y búsqueda de paradas
-
-**Query 7.1.1** — Búsqueda de tablas maestras y tablas con parada/paro:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 -- Buscar tablas maestras basicas (patrón b*1f)
@@ -356,22 +266,20 @@ AND (tablename ILIKE '%parada%' OR tablename ILIKE '%paro%' OR tablename ILIKE '
 ORDER BY tablename;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
   tablename  
- -------------
-  banconf1f
-  bartic11f
-  bartic1f
-  ... [30 tablas] ...
+-------------
+ banconf1f
+ bartic11f
+ bartic1f
+ ... [30 tablas] ...
 
  tablename 
 -----------
  agrparoee
 (1 row)
 ```
-
-**Hallazgo 7.1.1:**
+**Comentario de Hallazgo**:
 - **No existe una tabla maestra de tipos de paradas** como `bparada1f` o `mparada1f`
 - La única tabla relacionada es `agrparoee` (ya inspeccionada, vacía)
 - Las tablas maestras encontradas son de otros dominios: artículos, canales, cuentas contables, etc.
@@ -379,22 +287,9 @@ ORDER BY tablename;
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 7
+### SECCIÓN: BÚSQUEDA DE STORED PROCEDURES RELACIONADOS CON PARADAS
+Verificación de existencia de lógica de negocio embebida en la base de datos para manejo de paradas.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | No existe `bparada1f` ni `mparada1f` | 7.1.1 | Confirmado: catálogo nunca existió; crear desde cero |
-| 2 | Solo `agrparoee` relacionada con paradas (vacía) | 7.1.1 | Sin base de datos para migrar |
-
----
-
-## 8. BÚSQUEDA DE STORED PROCEDURES RELACIONADOS CON PARADAS
-
-**Objetivo:** Verificar existencia de lógica de negocio embebida en la base de datos para manejo de paradas.
-
-### 8.1 Consulta: Stored procedures y funciones de paradas/OEE
-
-**Query 8.1.1** — Búsqueda de rutinas con parada/paro/oee:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT routine_name, routine_type, data_type 
@@ -404,36 +299,22 @@ AND (routine_name ILIKE '%parada%' OR routine_name ILIKE '%paro%' OR routine_nam
 ORDER BY routine_name;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  routine_name | routine_type | data_type 
 --------------+--------------+-----------
 (0 rows)
 ```
-
-**Hallazgo 8.1.1:** No existen stored procedures o funciones relacionadas con paradas u OEE. Toda la lógica de negocio debería estar en la capa de aplicación, pero como las tablas están vacías, **no hay implementación operativa en ningún nivel**.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 8
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 0 stored procedures de paradas/OEE | 8.1.1 | Lógica debe implementarse en Python/Odoo models |
+**Comentario de Hallazgo**:
+No existen stored procedures o funciones relacionadas con paradas u OEE. Toda la lógica de negocio debería estar en la capa de aplicación, pero como las tablas están vacías, **no hay implementación operativa en ningún nivel**.
 
 ---
 
-## 9. ANÁLISIS DE TABLAS DE LÍNEAS DE PRODUCCIÓN (`mlinea1f`)
+### SECCIÓN: ANÁLISIS DE TABLAS DE LÍNEAS DE PRODUCCIÓN (`mlinea1f`)
+Inspección de la maestra de líneas de producción para entender cómo se podrían asociar paradas a líneas específicas.
 
-**Objetivo:** Inspeccionar la maestra de líneas de producción para entender cómo se podrían asociar paradas a líneas específicas.
-
-### 9.1 Consulta: Estructura y datos de `mlinea1f`
-
-**Query 9.1.1** — Describir estructura y muestrear líneas:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d mlinea1f; SELECT compania, linea, descrip, flglinea, estado FROM mlinea1f LIMIT 20; SELECT count(*) FROM mlinea1f;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                    Table "public.mlinea1f"
       Column       |  Type   | Collation | Nullable | Default 
@@ -446,23 +327,23 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d mlin
  estado            | text    |           | not null | 
  feccrea           | integer |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_170087_mlinea1l1" UNIQUE, btree (compania, linea)
-     "idx_170087_mlinea1l2" btree (compania, descrip)
+Indexes:
+    "idx_170087_mlinea1l1" UNIQUE, btree (compania, linea)
+    "idx_170087_mlinea1l2" btree (compania, descrip)
 
  compania | linea | descrip | flglinea | estado 
 ----------+-------+---------+----------+--------
-  0030     | 0001  | LINEA 1 | LLENADORA| A
-  0030     | 0002  | LINEA 2 | LLENADORA| A
-  ... [20 rows] ...
+ 0030     | 0001  | LINEA 1 | LLENADORA| A
+ 0030     | 0002  | LINEA 2 | LLENADORA| A
+ ... [20 rows] ...
 
  count 
 -------
    156
 (1 row)
 ```
-
-**Hallazgo 9.1.1:** La tabla `mlinea1f` tiene **156 líneas de producción** activas con:
+**Comentario de Hallazgo**:
+La tabla `mlinea1f` tiene **156 líneas de producción** activas con:
 - `linea`: Código de línea (ej: '0001', '0002')
 - `descrip`: Descripción (ej: 'LINEA 1', 'LINEA 2')
 - `flglinea`: Tipo de línea (ej: 'LLENADORA', 'ETIQUETADORA')
@@ -472,23 +353,9 @@ Esta tabla será útil en Odoo 19 para asociar tipos de paradas a líneas espec�
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 9
+### SECCIÓN: ANÁLISIS DE VOLUMENES GLOBALES DE TABLAS DE PARADAS
+Obtención del conteo total de registros en todas las tablas relacionadas con paradas para dimensionar la escala de datos a migrar.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 156 líneas de producción activas | 9.1.1 | Modelo de paradas debe tener Many2one a línea de producción |
-| 2 | `flglinea` indica tipo (LLENADORA, ETIQUETADORA) | 9.1.1 | Útil para filtrar paradas por tipo de línea |
-| 3 | Sin relación formal con paradas en legacy | 9.1.1 | Implementar relación en Odoo desde cero |
-
----
-
-## 10. ANÁLISIS DE VOLÚMENES GLOBALES DE TABLAS DE PARADAS
-
-**Objetivo:** Obtener el conteo total de registros en todas las tablas relacionadas con paradas para dimensionar la escala de datos a migrar.
-
-### 10.1 Consulta: Conteo global de tablas de paradas
-
-**Query 10.1.1** — Union de conteos de todas las tablas relacionadas:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT 'agrparoee' as tabla, count(*) FROM agrparoee
@@ -498,7 +365,6 @@ UNION ALL SELECT 'mtiempoi1f', count(*) FROM mtiempoi1f
 UNION ALL SELECT 'prgopdet (con asigparada)', count(*) FROM prgopdet;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
           tabla          | count 
 -------------------------+-------
@@ -509,30 +375,16 @@ UNION ALL SELECT 'prgopdet (con asigparada)', count(*) FROM prgopdet;
  prgopdet (con asigparada)| 53259
 (5 rows)
 ```
-
-**Hallazgo 10.1.1:**
+**Comentario de Hallazgo**:
 - **Tablas de catálogo de paradas**: 0 registros en todas (`agrparoee`, `agrupoe`, `agrupoe1`)
 - **Tabla transaccional**: `prgopdet` tiene 53,259 registros pero solo tiene un flag boolean `asigparada`, no tipos de paradas
 - **Conclusión**: No hay datos de tipos de paradas para migrar. El módulo existe como estructura vacía pero nunca se operó.
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 10
+### SECCIÓN: AUDITORÍA DE TRIGGERS EN TABLAS DE PARADAS
+Verificación de existencia de triggers (disparadores) en las tablas relacionadas con paradas que ejecuten lógica automática de negocio.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 0 registros en todas las tablas de catálogo | 10.1.1 | Sin migración de datos; crear catálogo nuevo |
-| 2 | `prgopdet` tiene 53,259 registros pero solo flag boolean | 10.1.1 | No hay tipos de paradas que migrar |
-
----
-
-## 11. AUDITORÍA DE TRIGGERS EN TABLAS DE PARADAS
-
-**Objetivo:** Verificar existencia de triggers (disparadores) en las tablas relacionadas con paradas que ejecuten lógica automática de negocio.
-
-### 11.1 Consulta: Triggers en tablas de paradas
-
-**Query 11.1.1** — Búsqueda de triggers en tablas relacionadas:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT trigger_name, event_manipulation, event_object_table
@@ -540,39 +392,24 @@ FROM information_schema.triggers
 WHERE event_object_table IN ('agrparoee', 'agrupoe', 'agrupoe1', 'prgopdet');
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  trigger_name | event_manipulation | event_object_table 
 --------------+--------------------+--------------------
 (0 rows)
 ```
-
-**Hallazgo 11.1.1:**
+**Comentario de Hallazgo**:
 - **Sin triggers**: No existen disparadores en ninguna de las tablas relacionadas con paradas.
 - **Ventaja para migración**: Al no haber lógica embebida en triggers, la creación del módulo en Odoo 19 es limpia: toda la lógica se implementará en los modelos Python de Odoo (`models/`), con mayor control y trazabilidad.
 - **Riesgo mitigado**: No hay efectos colaterales ocultos que deban replicarse.
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 11
+### SECCIÓN: ANÁLISIS DE TABLA `bmotiv1f` (MOTIVOS MAESTROS)
+Inspección de la tabla maestra de motivos para verificar si contiene tipos de paradas de producción.
 
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 0 triggers en tablas de paradas | 11.1.1 | Migración limpia; sin lógica embebida que replicar |
-
----
-
-## 12. ANÁLISIS DE TABLA `bmotiv1f` (MOTIVOS MAESTROS)
-
-**Objetivo:** Inspeccionar la tabla maestra de motivos para verificar si contiene tipos de paradas de producción.
-
-### 12.1 Consulta: Estructura y datos de `bmotiv1f`
-
-**Query 12.1.1** — Describir estructura y muestrear motivos:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bmotiv1f; SELECT compania, motivo, descrip, flgtipmoti, estado FROM bmotiv1f LIMIT 20; SELECT count(*) FROM bmotiv1f;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                     Table "public.bmotiv1f"
    Column   |       Type       | Collation | Nullable | Default 
@@ -588,48 +425,34 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bmot
  estado     | text             |           | not null | 
  feccrea    | integer          |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_164727_bmotiv1l1" UNIQUE, btree (compania, motivo)
-     "idx_164727_bmotiv1l2" btree (compania, descrip)
+Indexes:
+    "idx_164727_bmotiv1l1" UNIQUE, btree (compania, motivo)
+    "idx_164727_bmotiv1l2" btree (compania, descrip)
 
  compania | motivo |                 descrip                  | flgtipmoti | estado 
 ----------+--------+------------------------------------------+------------+--------
-  0060     |    397 | ADELANTO DE SALARIOS                     | Libre      | A
-  0060     |    398 | COBRANZAS LETRAS ME                      | Libre      | A
-  0060     |    399 | COBRANZAS LETRAS MN                      | Libre      | A
-  0060     |    400 | PAGO PROVEEDORES DETRACCION              | Libre      | A
-  ... [20 rows] ...
+ 0060     |    397 | ADELANTO DE SALARIOS                     | Libre      | A
+ 0060     |    398 | COBRANZAS LETRAS ME                      | Libre      | A
+ 0060     |    399 | COBRANZAS LETRAS MN                      | Libre      | A
+ 0060     |    400 | PAGO PROVEEDORES DETRACCION              | Libre      | A
+ ... [20 rows] ...
 
  count 
 -------
   3215
 (1 row)
 ```
-
-**Hallazgo 12.1.1:** La tabla `bmotiv1f` tiene **3,215 registros** pero son **motivos contables/financieros** (adelantos de salarios, cobranzas, pagos a proveedores), no tipos de paradas de producción. El campo `flgtipmoti` indica el tipo de motivo ('Libre', 'Transf', 'Orden'), pero no hay relación con paradas de líneas de producción.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 12
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `bmotiv1f` tiene 3,215 motivos contables/financieros | 12.1.1 | No aplica a paradas; crear catálogo independiente |
-| 2 | Motivos como "ADELANTO DE SALARIOS", "COBRANZAS" | 12.1.1 | Dominio contable, no producción |
+**Comentario de Hallazgo**:
+La tabla `bmotiv1f` tiene **3,215 registros** pero son **motivos contables/financieros** (adelantos de salarios, cobranzas, pagos a proveedores), no tipos de paradas de producción. El campo `flgtipmoti` indica el tipo de motivo ('Libre', 'Transf', 'Orden'), pero no hay relación con paradas de líneas de producción.
 
 ---
 
-## 13. ANÁLISIS DE TABLA `bproce1f` (PROCEDIMIENTOS)
+### SECCIÓN: ANÁLISIS DE TABLA `bproce1f` (PROCEDIMIENTOS)
+Inspección de tabla maestra de procedimientos para verificar si contiene tipos de paradas o procesos productivos.
 
-**Objetivo:** Inspeccionar tabla maestra de procedimientos para verificar si contiene tipos de paradas o procesos productivos.
-
-### 13.1 Consulta: Estructura y datos de `bproce1f`
-
-**Query 13.1.1** — Describir estructura y muestrear procedimientos:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bproce1f; SELECT compania, docuproced, procedim, descproce1, stsproced FROM bproce1f LIMIT 20; SELECT count(*) FROM bproce1f;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                   Table "public.bproce1f"
      Column      |  Type   | Collation | Nullable | Default 
@@ -643,42 +466,30 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bpro
  flgvisible      | text    |           | not null | 
  motivo_traslado | text    |           |          | 
  ... [más columnas] ...
- Indexes:
-     "idx_164782_bproce1l01" UNIQUE, btree (compania, docuproced, procedim)
+Indexes:
+    "idx_164782_bproce1l01" UNIQUE, btree (compania, docuproced, procedim)
 
  compania | docuproced | procedim | descproce1 |        descproce2         | stsproced 
 ----------+------------+----------+------------+---------------------------+-----------
-  0100     | GRA        | TRA      | COMPANY    | Transfer To Same Company  | A
-  0100     | GRA        | VTC      | SALE COMME | Sale to Commercializes    | A
-  0100     | NCC        | 001      | Venta      | Venta                     | A
-  ... [20 rows] ...
+ 0100     | GRA        | TRA      | COMPANY    | Transfer To Same Company  | A
+ 0100     | GRA        | VTC      | SALE COMME | Sale to Commercializes    | A
+ 0100     | NCC        | 001      | Venta      | Venta                     | A
+ ... [20 rows] ...
 
  count 
 -------
   3680
 (1 row)
 ```
-
-**Hallazgo 13.1.1:** La tabla `bproce1f` tiene **3,680 registros** pero son **procedimientos contables/logísticos** (ventas, transferencias, exportaciones), no tipos de paradas de producción. El campo `motivo_traslado` es un código de motivo para traslados, no para paradas de líneas.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 13
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | `bproce1f` tiene 3,680 procedimientos contables/logísticos | 13.1.1 | No aplica a paradas; excluir del módulo |
-| 2 | Procedimientos como "Venta", "Transfer" | 13.1.1 | Dominio contable/logístico, no producción |
+**Comentario de Hallazgo**:
+La tabla `bproce1f` tiene **3,680 registros** pero son **procedimientos contables/logísticos** (ventas, transferencias, exportaciones), no tipos de paradas de producción. El campo `motivo_traslado` es un código de motivo para traslados, no para paradas de líneas.
 
 ---
 
-## 14. VALIDACIONES ADICIONALES - BÚSQUEDA EXHAUSTIVA
+### SECCIÓN: VALIDACIONES ADICIONALES - BÚSQUEDA EXHAUSTIVA
+Verificaciones adicionales para asegurar que no existe implementación oculta de paradas en tablas de producción, vistas o tablas básicas no inspeccionadas.
 
-**Objetivo:** Verificaciones adicionales para asegurar que no existe implementación oculta de paradas en tablas de producción, vistas o tablas básicas no inspeccionadas.
-
-### 14.1 Consulta: Campos de paradas en tablas de producción (tpro*)
-
-**Query 14.1.1** — Búsqueda de campos parada/paro/tiempo/duración en tablas `tpro*`:
+#### 1. Búsqueda de campos de paradas en tablas de producción (tpro*)
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT table_name, column_name, data_type 
@@ -689,18 +500,15 @@ AND table_schema = 'public'
 ORDER BY table_name;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  table_name | column_name | data_type 
 ------------+-------------+-----------
 (0 rows)
 ```
+**Comentario de Hallazgo**:
+No existen campos específicos de paradas, paros, tiempos o duración en ninguna tabla de producción (`tpro*`). Esto confirma que el registro de paradas no está implementado en la capa transaccional de producción.
 
-**Hallazgo 14.1.1:** No existen campos específicos de paradas, paros, tiempos o duración en ninguna tabla de producción (`tpro*`). Esto confirma que el registro de paradas no está implementado en la capa transaccional de producción.
-
-### 14.2 Consulta: Vistas relacionadas con paradas u OEE
-
-**Query 14.2.1** — Búsqueda de views con parada/oee/eficiencia/paro:
+#### 2. Búsqueda de vistas relacionadas con paradas u OEE
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT table_name 
@@ -710,18 +518,15 @@ AND (table_name ILIKE '%parada%' OR table_name ILIKE '%oee%' OR table_name ILIKE
 ORDER BY table_name;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  table_name 
 ------------
 (0 rows)
 ```
+**Comentario de Hallazgo**:
+No existen vistas (views) relacionadas con paradas u OEE. No hay lógica de consulta predefinida para análisis de eficiencia o paradas.
 
-**Hallazgo 14.2.1:** No existen vistas (views) relacionadas con paradas u OEE. No hay lógica de consulta predefinida para análisis de eficiencia o paradas.
-
-### 14.3 Consulta: Tablas de tiempo/duración que puedan registrar paradas
-
-**Query 14.3.1** — Búsqueda de tablas con tiempo/duracion/horas:
+#### 3. Búsqueda de tablas de tiempo/duración que puedan registrar paradas reales
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT tablename FROM pg_tables 
@@ -732,7 +537,6 @@ AND tablename NOT ILIKE '%log%'
 ORDER BY tablename;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  tablename  
 ------------
@@ -740,16 +544,13 @@ ORDER BY tablename;
  vsbtiempo
 (2 rows)
 ```
-
-**Hallazgo 14.3.1:**
+**Comentario de Hallazgo**:
 - `mtiempoi1f`: Ya inspeccionada, vacía y es de tiempos de embarque/logística, no de paradas.
 - `vsbtiempo`: Inspeccionada a continuación.
 
-**Query 14.3.2** — Estructura y muestreo de `vsbtiempo`:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d vsbtiempo; SELECT * FROM vsbtiempo LIMIT 5;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                                   Table "public.vsbtiempo"
    Column   |   Type   | Collation | Nullable |                   Default                    
@@ -765,8 +566,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d vsbt
  dia        | smallint |           | not null | 
  diasemana  | smallint |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_180126_pk_vsbtiempo" PRIMARY KEY, btree (codtiempo)
+Indexes:
+    "idx_180126_pk_vsbtiempo" PRIMARY KEY, btree (codtiempo)
 
  codtiempo | fechask  |   fecha    | fechaint | ano  | trimestre | mes | semana | dia | diasemana | ntrimestre | nmes  | nmes3l |  nsemana  |  ndia  | ndiasemana 
 -----------+----------+------------+----------+------+-----------+-----+--------+-----+-----------+------------+-------+--------+-----------+--------+------------
@@ -777,12 +578,10 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d vsbt
          5 | 20080105 | 2008-01-05 |   733046 | 2008 |         1 |   1 |      1 |   5 |         6 | T1/08      | Enero | Ene    | Sem 1 /08 | 5  Ene | Sábado
 (5 rows)
 ```
+**Comentario de Hallazgo**:
+`vsbtiempo` es una **tabla de calendario/dimension de tiempo** (tipo data warehouse), no de paradas. Contiene desglose de fechas (año, trimestre, mes, semana, día, nombre del día) para reportes. No aplica para el programa #133.
 
-**Hallazgo 14.3.2:** `vsbtiempo` es una **tabla de calendario/dimension de tiempo** (tipo data warehouse), no de paradas. Contiene desglose de fechas (año, trimestre, mes, semana, día, nombre del día) para reportes. No aplica para el programa #133.
-
-### 14.4 Consulta: Estructura completa de `opxlinea` para campos ocultos de paradas
-
-**Query 14.4.1** — Columnas de `opxlinea`:
+#### 4. Verificación de estructura completa de `opxlinea` para campos ocultos de paradas
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT column_name, data_type 
@@ -792,7 +591,6 @@ AND table_schema = 'public'
 ORDER BY ordinal_position;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
  column_name |    data_type     
 -------------+------------------
@@ -820,12 +618,10 @@ ORDER BY ordinal_position;
  tipdata     | text
 (22 rows)
 ```
+**Comentario de Hallazgo**:
+La tabla `opxlinea` tiene 22 columnas, **ninguna relacionada con paradas**. Los campos `horini` y `horfin` son de programación (hora inicio/fin planeada), no de registro de paradas reales. No hay campos como `tiempoparada`, `motivotiempomuerto`, etc.
 
-**Hallazgo 14.4.1:** La tabla `opxlinea` tiene 22 columnas, **ninguna relacionada con paradas**. Los campos `horini` y `horfin` son de programación (hora inicio/fin planeada), no de registro de paradas reales. No hay campos como `tiempoparada`, `motivotiempomuerto`, etc.
-
-### 14.5 Consulta: Tablas básicas (b*) no inspeccionadas previamente
-
-**Query 14.5.1** — Búsqueda de tablas básicas candidatas:
+#### 5. Inspección de tablas básicas (b*) no inspeccionadas previamente
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 -- Buscar tablas basicas candidatas
@@ -840,7 +636,6 @@ AND tablename NOT ILIKE '%linea%'
 ORDER BY tablename;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
         tablename        
 -------------------------
@@ -852,14 +647,12 @@ ORDER BY tablename;
  bviaem1f
 (175 rows)
 ```
+**Comentario de Hallazgo**:
+Se identificaron 175 tablas básicas. Se inspeccionaron las candidatas más probables por nombre:
 
-**Hallazgo 14.5.1:** Se identificaron 175 tablas básicas. Se inspeccionaron las candidatas más probables por nombre:
-
-**Query 14.5.2** — Estructura y conteo de `bareaf`, `bafmejora`, `bsprocss`:
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bareaf; SELECT count(*) FROM bareaf; \d bafmejora; SELECT count(*) FROM bafmejora; \d bsprocss; SELECT count(*) FROM bsprocss;' | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
                 Table "public.bareaf"
   Column   |  Type   | Collation | Nullable | Default 
@@ -871,8 +664,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bare
  gerencia  | text    |           | not null | 
  estado    | text    |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_163964_bareal1" UNIQUE, btree (compania, ejercicio, area)
+Indexes:
+    "idx_163964_bareal1" UNIQUE, btree (compania, ejercicio, area)
 
  count 
 -------
@@ -888,8 +681,8 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bare
  codcontab  | text    |           | not null | 
  estado     | text    |           | not null | 
  ... [más columnas] ...
- Indexes:
-     "idx_163954_bafmejoral1" UNIQUE, btree (compania, ejercicio, mejora)
+Indexes:
+    "idx_163954_bafmejoral1" UNIQUE, btree (compania, ejercicio, mejora)
 
  count 
 -------
@@ -904,16 +697,15 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bare
  schedule_fecha  | integer  |           |          | 
  schedule_hora   | text     |           |          | 
  ... [más columnas] ...
- Indexes:
-     "idx_180443_llave_1u" UNIQUE, btree (n_proceso)
+Indexes:
+    "idx_180443_llave_1u" UNIQUE, btree (n_proceso)
 
  count 
 -------
      0
 (1 row)
 ```
-
-**Hallazgo 14.5.2:**
+**Comentario de Hallazgo**:
 - `bareaf` (2,983 registros): Tabla maestra de **áreas organizacionales** (ej: "PROCESO FUNDIDO", "PLANEAMIENTO"), no de tipos de paradas.
 - `bafmejora` (0 registros): Tabla de **mejoras contables**, vacía y no aplica.
 - `bsprocss` (0 registros): Tabla de **programación de procesos batch** (scheduler), vacía y no aplica.
@@ -921,9 +713,7 @@ docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo '\d bare
 
 **Conclusión**: Ninguna de las 175 tablas básicas es un catálogo de tipos de paradas.
 
-### 14.6 Consulta: Triggers en tablas de producción que puedan manejar paradas
-
-**Query 14.6.1** — Triggers en tablas `tpro*` y `opx*`:
+#### 6. Verificación de triggers en tablas de producción que puedan manejar paradas
 ```bash
 docker exec -i odoo19-server-dev sh -c "export PGPASSWORD='***' && echo \"
 SELECT trigger_name, event_manipulation, event_object_table 
@@ -933,7 +723,6 @@ OR event_object_table LIKE 'opx%'
 ORDER BY event_object_table;
 \" | psql -h 100.119.5.108 -U postgres -d mxbdaje_local"
 ```
-
 ```text
       trigger_name      | event_manipulation | event_object_table 
 ------------------------+--------------------+--------------------
@@ -944,25 +733,12 @@ ORDER BY event_object_table;
  trg_letrapr_progra_ins | INSERT             | tprolt1f
 (5 rows)
 ```
-
-**Hallazgo 14.6.1:** Los 5 triggers encontrados están en `tprolt1f` y están relacionados con **"letras" y "cargo"** (cobros/pagos contables), no con paradas de producción. No hay triggers que manejen lógica de paradas, tiempos muertos o OEE.
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 14
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 0 campos de paradas en tablas `tpro*` | 14.1.1 | Registro de paradas no implementado en capa transaccional |
-| 2 | 0 vistas de paradas/OEE | 14.2.1 | Sin lógica de consulta predefinida |
-| 3 | `vsbtiempo` es tabla de calendario, no de paradas | 14.3.2 | No aplica; usar para reportes de periodos |
-| 4 | `opxlinea` sin campos de paradas (22 columnas) | 14.4.1 | `horini`/`horfin` son planeados, no reales |
-| 5 | 175 tablas básicas inspeccionadas, ninguna de paradas | 14.5.2 | Confirmado: catálogo nunca existió |
-| 6 | 5 triggers en `tprolt1f` son de letras/cobros | 14.6.1 | Sin lógica de paradas en triggers |
+**Comentario de Hallazgo**:
+Los 5 triggers encontrados están en `tprolt1f` y están relacionados con **"letras" y "cargo"** (cobros/pagos contables), no con paradas de producción. No hay triggers que manejen lógica de paradas, tiempos muertos o OEE.
 
 ---
 
-## 15. CONCLUSIÓN TÉCNICA FINAL (VALIDACIÓN COMPLETA)
+### CONCLUSIÓN TÉCNICA FINAL (VALIDACIÓN COMPLETA)
 
 **El programa #133 "Paradas" no tiene implementación operativa en la base de datos legacy de Mexico.**
 
@@ -985,61 +761,7 @@ ORDER BY event_object_table;
 
 ---
 
-### RESUMEN DE HALLAZGOS — SECCIÓN 15
-
-| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
-|---|----------|--------------------------|---------------------|
-| 1 | 0 registros en todas las tablas de catálogo de paradas | Secciones 3, 4, 10 | Módulo debe crearse desde cero |
-| 2 | `prgopdet.asigparada` es flag boolean sin tipo | Sección 6 | Odoo necesita Many2one a catálogo |
-| 3 | Sin triggers ni stored procedures | Secciones 8, 11 | Lógica limpia en Python/Odoo |
-| 4 | 175 tablas básicas inspeccionadas, ninguna aplica | Sección 14 | Confirmado: no hay implementación oculta |
-
----
-
-## 16. DUDAS LUEGO DEL ANÁLISIS DE LAS CONSULTAS PREVIAS
-
-### 16.1 ¿Por qué las tablas OEE están vacías si estaban diseñadas?
-
-**Respuesta:** Las tablas `agrupoe`, `agrupoe1` y `agrparoee` tienen estructura completa con índices y campos de auditoría, pero 0 registros. Esto indica que el módulo de OEE/paradas fue **diseñado pero nunca operado**. Posiblemente se implementó la estructura como parte de un proyecto que no llegó a producción en Mexico, o se dejó como placeholder para una futura integración.
-
-### 16.2 ¿El flag `asigparada` en `prgopdet` tiene algún valor práctico?
-
-**Respuesta:** El flag `asigparada` indica si una orden de producción tiene paradas asignadas, pero sin un catálogo de tipos de paradas, no hay forma de saber qué tipo de parada ocurrió. En Odoo 19, este flag debe reemplazarse por una relación Many2one a `bm.ctl.produccion.parada` que permita registrar el tipo específico.
-
-### 16.3 ¿Se puede aprovechar la jerarquía `agrupoe` → `agrupoe1` → `agrparoee`?
-
-**Respuesta:** El patrón jerárquico (grupo → subgrupo → parada específica) es válido y puede replicarse en Odoo usando un modelo con `parent_id` (Many2one self-referencia) para crear categorías y subcategorías de paradas. Sin embargo, como no hay datos que migrar, la jerarquía debe diseñarse desde cero basándose en las necesidades reales de Mexico.
-
-### 16.4 ¿Las 156 líneas de producción en `mlinea1f` deben migrarse?
-
-**Respuesta:** Las líneas de producción son un catálogo operativo que sí tiene datos reales. En Odoo 19, estas líneas pueden migrarse como registros de un modelo `bm.ctl.produccion.linea` y asociarse a las paradas para análisis de eficiencia por línea. El campo `flglinea` (LLENADORA, ETIQUETADORA) es útil para clasificar.
-
-### 16.5 ¿Qué categorías de paradas son relevantes para Mexico?
-
-**Respuesta:** Basándose en la estructura legacy y las necesidades típicas de producción, las categorías sugeridas son:
-- **MEC**: Mecánica (fallas de equipos: banda, motor, sensor, válvula)
-- **ELE**: Eléctrica (fallas eléctricas, sensores, PLC, tablero)
-- **OPE**: Operativa (cambio de formato, limpieza, ajuste)
-- **CAL**: Calidad (rechazo de producto, ajuste de calidad)
-- **MAT**: Falta de Material (desabasto de jarabe, envases, etiquetas)
-- **MAN**: Mantenimiento (preventivo/correctivo)
-- **OTR**: Otros
-
----
-
-### RESUMEN DE HALLAZGOS — SECCIÓN 16
-
-| # | Duda | Resolución |
-|---|------|------------|
-| 1 | ¿Por qué tablas OEE vacías? | Diseñadas pero nunca operadas |
-| 2 | ¿Valor práctico de `asigparada`? | Flag insuficiente; reemplazar con Many2one |
-| 3 | ¿Aprovechar jerarquía legacy? | Patrón válido pero sin datos; diseñar desde cero |
-| 4 | ¿Migrar 156 líneas de `mlinea1f`? | Sí, como catálogo de líneas de producción |
-| 5 | ¿Categorías relevantes para Mexico? | MEC, ELE, OPE, CAL, MAT, MAN, OTR |
-
----
-
-## 17. ACCIÓN RECOMENDADA EN ODOO
+### ACCIÓN RECOMENDADA EN ODOO
 
 **Crear el módulo de Paradas desde cero en Odoo 19**, ya que el sistema legacy no tiene una implementación operativa de este módulo.
 
@@ -1060,7 +782,7 @@ ORDER BY event_object_table;
    - `activo` (Boolean, default=True): Estado del tipo de parada
    - `tiempo_estimado` (Float): Tiempo estimado en minutos
    - `afecta_oee` (Boolean, default=True): Si afecta cálculo de OEE
-   - Campos de auditoría: `create_uid`, `create_date`, `write_uid`, `write_date`
+   - Campos de auditoría: `feccrea`, `horcrea`, `usucrea`, etc.
 
 2. **Vista lista editable** (`editable="bottom"`):
    - Campos visibles: codigo, descripcion, categoria_global, codigo_detalle, activo, tiempo_estimado, afecta_oee

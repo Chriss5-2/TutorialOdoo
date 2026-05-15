@@ -8,6 +8,6 @@
     <menuitem   id="menu_mantenimiento_categorias_linea"
                 name="Categorias de Lineas de Produccion"
                 parent="mant_clasificadores_menu"
-                action="base.action_partner_form"
+                action="action_categoria_linea"
                 sequence="40"/>
 </odoo>

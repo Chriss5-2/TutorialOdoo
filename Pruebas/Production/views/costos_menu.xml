@@ -24,7 +24,7 @@
 
         <menuitem id="cost_costSemiVariable_menu" name="Costo SemiVariable" parent="cost_menu" sequence="80"/>
             <menuitem id="cost_costSeVa_varProduccion_menu" name="Variables de Produccion" parent="cost_costSemiVariable_menu" sequence="10"/>
-                <menuitem id="cost_cosSeVa_catLinea" name="Categoria Linea de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="10" action="base.action_partner_form"/>
+                <menuitem id="cost_cosSeVa_catLinea" name="Categoria Linea de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="10" action="action_categoria_linea"/>
                 <menuitem id="cost_cosSeVa_valoresSemi" name="Valores Semi Variables" parent="cost_costSeVa_varProduccion_menu" sequence="20" action="base.action_partner_form"/>
 
         <menuitem id="cost_dolarizacion_menu" name="Dolarizacion" parent="cost_menu" sequence="90"/>

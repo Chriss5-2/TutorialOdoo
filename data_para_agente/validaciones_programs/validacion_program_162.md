@@ -479,3 +479,500 @@ Las queries de esta sección responden a: **"¿Existe lógica de aprobación de 
 | 3 | 491 columnas de aprobación en ~150 tablas — patrón transversal | 2.3.1 | El modelo de aprobación de Odoo puede ser genérico y reutilizable |
 | 4 | Solo 2 funciones almacenadas, ninguna de fórmulas | 2.4.1 | Toda la lógica de aprobación va en Python/Odoo |
 | 5 | 22 tablas de log disponibles, `log_aproaje` es la más relevante | 2.5.1 | Odoo usará su propio Chatter para auditoría de fórmulas |
+
+---
+
+## 3. AUDITORÍA DE DICCIONARIOS TÉCNICOS Y LOGS DE TRANSACCIONALIDAD
+
+**Objetivo:** Inspeccionar la estructura de las tablas maestras de configuración (`aprfor1f`), el registro histórico de firmas (`taprform1f`) y los logs de aprobación (`log_aproaje`) para garantizar que la persistencia de datos sea coherente con el flujo de Odoo 19.
+
+### 3.1 Consulta: Tabla maestra de configuración de aprobadores (`aprfor1f`)
+
+**Query 3.1.1** — Estructura de `aprfor1f`:
+```sql
+\d aprfor1f
+
+                 Table "public.aprfor1f"
+    Column   |  Type   | Collation | Nullable | Default 
+ ------------+---------+-----------+----------+---------
+  compania   | text    |           |          | 
+  transaccio | text    |           |          | 
+  nivel      | integer |           |          | 
+  tipaprob   | text    |           |          | 
+  aprobador  | integer |           |          | 
+  estado     | text    |           |          | 
+  feccrea    | integer |           |          | 
+  horcrea    | text    |           |          | 
+  usucrea    | text    |           |          | 
+  fecultmod  | integer |           |          | 
+  horultmod  | text    |           |          | 
+  ultusumod  | text    |           |          | 
+ Indexes:
+     "idx_163675_aprfor1l1" UNIQUE, btree (compania, transaccio, nivel, tipaprob, aprobador)
+```
+
+**Hallazgo 3.1.1:** `aprfor1f` define quién puede aprobar por compañía, transacción, nivel y tipo de aprobador. Su índice único (`compania, transaccio, nivel, tipaprob, aprobador`) confirma que un mismo aprobador puede existir en múltiples niveles para una misma transacción.
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 3
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | `aprfor1f` define aprobadores por compañía/transacción/nivel | 3.1.1 | Odoo debe crear su propio catálogo de aprobadores |
+
+---
+
+## 4. HISTORIAL DE FIRMAS Y TRAZABILIDAD
+
+**Objetivo:** Identificar quién autorizó, en qué fecha y qué datos temporales se usaron durante el proceso de aprobación de fórmulas.
+
+### 4.1 Consulta: Histórico de firmas (`taprform1f`)
+
+**Query 4.1.1** — Estructura de `taprform1f`:
+```sql
+\d taprform1f
+
+                    Table "public.taprform1f"
+    Column    |       Type       | Collation | Nullable | Default 
+ -------------+------------------+-----------+----------+---------
+  compania    | text             |           |          | 
+  transaccio  | text             |           |          | 
+  nrodoc      | text             |           |          | 
+  articulo    | double precision |           |          | 
+  insumo      | double precision |           |          | 
+  sucform     | text             |           |          | 
+  lineainsumo | text             |           |          | 
+  nivel       | integer          |           |          | 
+  empleautor  | integer          |           |          | 
+  fecautoriz  | integer          |           |          | 
+  horautoriz  | text             |           |          | 
+  stsaprobac  | text             |           |          | 
+  observac    | text             |           |          | 
+  estado      | text             |           |          | 
+  feccrea     | integer          |           |          | 
+  horcrea     | text             |           |          | 
+  usucrea     | text             |           |          | 
+  fecultmod   | integer          |           |          | 
+  horultimod  | text             |           |          | 
+  ultusumod   | text             |           |          | 
+ Indexes:
+     "idx_173721_taprform1l1" UNIQUE, btree (compania, transaccio, nrodoc, articulo, insumo, sucform, nivel)
+```
+
+**Query 4.1.2** — Muestreo de `taprform1f`:
+```sql
+SELECT * FROM taprform1f LIMIT 5;
+
+ compania | transaccio | nrodoc | articulo | insumo | sucform | lineainsumo | nivel | empleautor | fecautoriz | horautoriz | stsaprobac | observac | estado | feccrea | horcrea | usucrea | fecultmod | horultimod | ultusumod 
+ ----------+------------+--------+----------+--------+---------+-------------+-------+------------+------------+------------+------------+----------+--------+---------+---------+---------+-----------+------------+-----------
+ (0 rows)
+```
+
+**Hallazgo 4.1.1:** `taprform1f` debería contener el histórico de firmas por nivel de aprobación (quién autorizó, cuándo, qué estado). **La tabla está completamente vacía (0 registros).**
+
+---
+
+### 4.2 Consulta: Datos temporales del proceso (`tmpdetfor`)
+
+**Query 4.2.1** — Estructura de `tmpdetfor`:
+```sql
+\d tmpdetfor
+
+                     Table "public.tmpdetfor"
+     Column    |       Type       | Collation | Nullable | Default 
+ --------------+------------------+-----------+----------+---------
+  clave        | text             |           |          | 
+  compania     | text             |           |          | 
+  transaccio   | text             |           |          | 
+  nrodoc       | text             |           |          | 
+  sucform      | text             |           |          | 
+  articulo     | double precision |           |          | 
+  insumo       | double precision |           |          | 
+  linea        | text             |           |          | 
+  factconv     | double precision |           |          | 
+  accion       | text             |           |          | 
+  nivapro      | smallint         |           |          | 
+  flgaprob     | boolean          |           |          | 
+  aprobadop    | integer          |           |          | 
+  fecaprob     | integer          |           |          | 
+  horaprob     | text             |           |          | 
+  stssolicitud | text             |           |          | 
+  progactfor   | text             |           |          | 
+  seleccion    | bytea            |           |          | 
+  elimreg      | boolean          |           |          | 
+ Indexes:
+     "idx_177299_tmpdetforl1" UNIQUE, btree (clave, compania, transaccio, nrodoc, sucform, articulo, insumo)
+     "idx_177299_tmpdetforl2" btree (clave, seleccion, compania, transaccio, nrodoc, sucform, articulo, insumo)
+```
+
+**Query 4.2.2** — Muestreo de `tmpdetfor`:
+```sql
+SELECT * FROM tmpdetfor LIMIT 5;
+
+ clave | compania | transaccio | nrodoc | sucform | articulo | insumo | linea | factconv | accion | nivapro | flgaprob | aprobadop | fecaprob | horaprob | stssolicitud | progactfor | seleccion | elimreg 
+ -------+----------+------------+--------+---------+----------+--------+-------+----------+--------+---------+----------+-----------+----------+----------+--------------+------------+-----------+---------
+ (0 rows)
+```
+
+**Hallazgo 4.2.1:** `tmpdetfor` almacena los datos temporales del proceso de solicitud (acción a realizar, flag de aprobación, aprobador, fecha/hora). **También está vacía (0 registros).**
+
+**Resumen**
+
+"Consultamos `taprform1f` (debería tener el histórico de firmas por nivel) y `tmpdetfor` (debería tener los datos temporales de cada solicitud). Ambas están en cero. Esto confirma que el flujo multinivel de aprobación de fórmulas nunca se operó en Mexico — la aprobación se ejecuta por una vía directa sin pasar por estas tablas de trámite."
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 4
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | `taprform1f` (histórico de firmas) está vacía — 0 registros | 4.1.2 | No hay historial de firmas que migrar |
+| 2 | `tmpdetfor` (datos temporales del proceso) está vacía — 0 registros | 4.2.2 | El flujo de trámite nunca se operó |
+
+---
+
+## 5. MAESTRO DE FÓRMULAS DE FABRICACIÓN (`forfab`)
+
+**Objetivo:** Verificar si los cambios aprobados impactan directamente en esta tabla, que es la que usa producción.
+
+### 5.1 Consulta: Estructura y datos de `forfab`
+
+**Query 5.1.1** — Estructura de `forfab`:
+```sql
+\d forfab
+
+                      Table "public.forfab"
+     Column    |       Type       | Collation | Nullable | Default 
+ --------------+------------------+-----------+----------+---------
+  compania     | text             |           | not null | 
+  sucursal     | text             |           | not null | 
+  articulo     | double precision |           | not null | 
+  nrosecu      | smallint         |           | not null | 
+  material     | double precision |           | not null | 
+  porcent      | double precision |           | not null | 
+  factconv     | double precision |           | not null | 
+  cantidad     | double precision |           | not null | 
+  stkdisp      | double precision |           | not null | 
+  tipdist      | text             |           | not null | 
+  fase         | integer          |           | not null | 
+  corrfase     | smallint         |           | not null | 
+  feccrea      | integer          |           | not null | 
+  horcrea      | text             |           | not null | 
+  usucrea      | text             |           | not null | 
+  ultfecmod    | integer          |           | not null | 
+  ulthormod    | text             |           | not null | 
+  ultusumod    | text             |           | not null | 
+  lanza        | bytea            |           | not null | 
+  tetiqueta    | text             |           |          | 
+  aprobadop    | integer          |           |          | 
+  fecaprobadop | integer          |           |          | 
+  horaprobadop | text             |           |          | 
+ Indexes:
+     "idx_167195_forfab01" UNIQUE, btree (compania, sucursal, articulo, material)
+     "idx_167195_forfab02" btree (compania, sucursal, material, articulo)
+```
+
+**Query 5.1.2** — Muestreo de `forfab`:
+```sql
+SELECT * FROM forfab LIMIT 5;
+
+ compania | sucursal | articulo | nrosecu | material | porcent | factconv  | cantidad  | stkdisp | tipdist | fase | corrfase | feccrea | horcrea | usucrea  | ultfecmod | ulthormod | ultusumod | lanza | tetiqueta | aprobadop | fecaprobadop | horaprobadop 
+ ----------+----------+----------+---------+----------+---------+-----------+-----------+---------+---------+------+----------+---------+---------+----------+-----------+-----------+-----------+-------+-----------+-----------+--------------+--------------
+  0030     | 0001     |   524121 |       1 |     7177 |     100 |      18.8 |     59220 |       0 | UA      |    0 |        0 |  739494 | 070149  | MGLUNA   |    739494 | 070149    | MGLUNA    | \x54  |           |   1724308 |            0 | 000000
+  0030     | 0068     |   517262 |       1 |        8 |     100 | 0.0892054 | 633.62596 |       0 | UA      |    0 |        0 |  739632 | 100252  | MGLUNA   |    739632 | 100252    | MGLUNA    | \x54  |           |   1724308 |       739632 | 101951
+  0030     | 0001     |    81388 |       1 |    71741 |     100 | 0.0001968 |    0.1968 |       0 | UA      |    0 |        0 |  739458 | 110842  | AHRIVERA |    739458 | 110842    | AHRIVERA  | \x54  |           |     29750 |       739458 | 112102
+  0030     | 0001     |    58173 |       1 |    47279 |     100 |      0.49 |       490 |       0 | UC      |    0 |        0 |  739447 | 093624  | AHRIVERA |    739447 | 093624    | AHRIVERA  | \x54  |           |     29750 |            0 | 000000
+  0030     | 0001     |    68536 |       2 |    47279 |     100 |      0.49 |       490 |       0 | UA      |    2 |        2 |  739052 | 085732  | AHRIVERA |    739052 | 085732    | AHRIVERA  | \x54  |           |     29750 |            0 | 000000
+ (5 rows)
+```
+
+**Hallazgo 5.1.1:** `forfab` contiene 70,070 fórmulas activas con IDs de aprobadores reales (ej: 1724308, 29750). Sin embargo, las columnas `fecaprobadop` y `horaprobadop` aparecen vacías o con valores cero en la mayoría de registros — se sabe quién aprobó pero no cuándo. Evidencia una carencia de auditoría temporal en el sistema legacy.
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 5
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | `forfab` tiene 70,070 fórmulas con aprobador pero sin fecha/hora de aprobación | 5.1.2 | Odoo debe forzar registro de fecha/hora al aprobar |
+
+---
+
+## 6. SOLICITUDES DE ACTIVACIÓN DE FÓRMULAS
+
+**Objetivo:** Analizar el documento de solicitud (Cabecera/Detalle) que se crea ANTES de que la fórmula sea oficial.
+
+### 6.1 Consulta: Cabecera de solicitud (`csolactfor`)
+
+**Query 6.1.1** — Estructura de `csolactfor`:
+```sql
+\d csolactfor
+
+                 Table "public.csolactfor"
+     Column     |  Type   | Collation | Nullable | Default 
+ ----------------+---------+-----------+----------+---------
+  compania       | text    |           |          | 
+  transaccio     | text    |           |          | 
+  nrodoc         | text    |           |          | 
+  fecha          | integer |           |          | 
+  solicitante    | integer |           |          | 
+  qarticulos     | integer |           |          | 
+  qacciones      | integer |           |          | 
+  flgmailenviado | bytea   |           |          | 
+  nivelapr       | integer |           |          | 
+  aprobador      | integer |           |          | 
+  fecaprobac     | integer |           |          | 
+  horaprobac     | text    |           |          | 
+  stsaprobac     | text    |           |          | 
+  stsactualiza   | text    |           |          | 
+  flganulado     | bytea   |           |          | 
+  fecanula       | integer |           |          | 
+  feccrea        | integer |           |          | 
+  horcrea        | text    |           |          | 
+  usucrea        | text    |           |          | 
+  fecultmod      | integer |           |          | 
+  horultmod      | text    |           |          | 
+  ultusumod      | text    |           |          | 
+ Indexes:
+     "idx_165818_csolactforl1" UNIQUE, btree (compania, transaccio, nrodoc)
+```
+
+### 6.2 Consulta: Detalle de solicitud (`dsolactfor`)
+
+**Query 6.2.1** — Estructura de `dsolactfor`:
+```sql
+\d dsolactfor
+
+                     Table "public.dsolactfor"
+     Column    |       Type       | Collation | Nullable | Default 
+ --------------+------------------+-----------+----------+---------
+  compania     | text             |           |          | 
+  transaccio   | text             |           |          | 
+  nrodoc       | text             |           |          | 
+  sucform      | text             |           |          | 
+  articulo     | double precision |           |          | 
+  insumo       | double precision |           |          | 
+  lineainsumo  | text             |           |          | 
+  factconv     | double precision |           |          | 
+  accion       | text             |           |          | 
+  nivaprob     | integer          |           |          | 
+  flgaprob     | bytea            |           |          | 
+  aprobadop    | integer          |           |          | 
+  fecaprob     | integer          |           |          | 
+  horaprob     | text             |           |          | 
+  stsaprobac   | text             |           |          | 
+  stsactualiza | text             |           |          | 
+  feccrea      | integer          |           |          | 
+  horcrea      | text             |           |          | 
+  usucrea      | text             |           |          | 
+  fecultmod    | integer          |           |          | 
+  horultmod    | text             |           |          | 
+  ultusumod    | text             |           |          | 
+ Indexes:
+     "idx_166686_dsolactforl1" UNIQUE, btree (compania, transaccio, nrodoc, sucform, articulo, insumo)
+```
+
+**Query 6.2.2** — Muestreo de `csolactfor`:
+```sql
+SELECT * FROM csolactfor LIMIT 5;
+
+ compania | transaccio | nrodoc | fecha | solicitante | qarticulos | qacciones | flgmailenviado | nivelapr | aprobador | fecaprobac | horaprobac | stsaprobac | stsactualiza | flganulado | fecanula | feccrea | horcrea | usucrea | fecultmod | horultmod | ultusumod 
+ ----------+------------+--------+-------+-------------+------------+-----------+----------------+----------+-----------+------------+------------+------------+--------------+------------+----------+---------+---------+---------+-----------+-----------+-----------
+ (0 rows)
+```
+
+**Hallazgo 6.2.1:** `csolactfor` y `dsolactfor` están vacías (0 registros). Estas tablas deberían contener las solicitudes de activación de fórmulas (cabecera y detalle) antes de que sean oficiales. Su vacío confirma que en Mexico no se usa el flujo de solicitud formal — las fórmulas se crean y aprueban directamente sin pasar por este trámite.
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 6
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | `csolactfor`/`dsolactfor` (solicitudes de activación) vacías | 6.2.2 | No se usa flujo de solicitud formal en Mexico |
+
+---
+
+## 7. BITÁCORA DE AUDITORÍA Y CAMBIOS DE ESTADO
+
+**Objetivo:** Ver el rastro de quién cambió los estados de aprobación y detectar si hay reversiones o rechazos.
+
+### 7.1 Consulta: Log de aprobaciones (`log_aproaje`)
+
+**Query 7.1.1** — Estructura de `log_aproaje`:
+```sql
+\d log_aproaje
+
+                                       Table "public.log_aproaje"
+   Column  |            Type             | Collation | Nullable |                 Default                 
+ ----------+-----------------------------+-----------+----------+-----------------------------------------
+  id       | bigint                      |           | not null | nextval('log_aproaje_id_seq'::regclass)
+  jsonbody | text                        |           |          | 
+  idapp    | integer                     |           |          | 
+  response | text                        |           |          | 
+  fecha    | timestamp without time zone |           |          | 
+ Indexes:
+     "idx_167765_pk__log_apro__3214ec273bf6f9fd" PRIMARY KEY, btree (id)
+```
+
+**Query 7.1.2** — Muestreo de `log_aproaje`:
+```sql
+SELECT * FROM log_aproaje LIMIT 5;
+
+ id | jsonbody
+ ----+---------
+  1 | {"auth":"areli.torres.mx@ajegroup.com","resume":"AJEMEX - 0001 : PLANTA PUEBLA/202506000020","detail": {"title":"AJEMEX - 0001 : PLANTA PUEBLA/202506000020","body": [{"campo":"Compania","valor":"0030 - AJEMEX"},{"campo":"Sucursal","valor":"0001 - PLANTA PUEBLA"},{"campo":"Numero Documento","valor":"202506000020"},{"campo":"Solicitante","valor":"GARCIA MINERO LUISA"},{"campo":"Fecha","valor":"27/06/2025"},{"campo":"Moneda","valor":"PES - PESOS"},{"campo":"Importe","valor":"85000.00"},{"campo":"Glosa","valor":"CANCELACION DE PROV DE GTOS DE IMPORTACION EXP 141 AJEMAYA OC 139549"},{"campo":"PRIMERA APROBACION","valor":"APROBACION"},{"campo":"Aprobador","valor":"TORRES SANCHEZ MARIA SURIARELI"}],"details_title":"DETALLE","details_header": [{"titulo":"Cuenta Contable","width":"80"},{"titulo":"Descripcion","width":"400"},{"titulo":"Dolares","width":"80"},{"titulo":"Debe","width":"80"},{"titulo":"Haber","width":"80"}],"details_rows": [...]},...
+  2 | {"auth":"yazmin.ramirez.mx@ajegroup.com","resume":"AJEMEX - 0001 : PLANTA PUEBLA/202506000020",...
+  3 | {"auth":"areli.torres.mx@ajegroup.com","resume":"AJEMEX - 0001 : PLANTA PUEBLA/202506000021",...
+  4 | {"auth":"yazmin.ramirez.mx@ajegroup.com","resume":"AJEMEX - 0001 : PLANTA PUEBLA/202506000021",...
+  5 | {"auth":"areli.torres.mx@ajegroup.com","resume":"AJEMEX - 0001 : PLANTA PUEBLA/202506000021",...
+ (5 rows)
+```
+
+**Hallazgo 7.1.1:** `log_aproaje` contiene registros JSON de auditoría, pero corresponden a aprobaciones de **asientos contables manuales** (nemotecnico: `AprobacionAsientoManual`, type: `AMA`), no a fórmulas de producción. Cada registro incluye email del aprobador, detalles del documento y campos de validación. Esta tabla es un log genérico del sistema de aprobaciones, no específico del programa #162.
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 7
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | `log_aproaje` es log genérico de asientos contables, no de fórmulas | 7.1.2 | Odoo usará Chatter para auditoría específica de fórmulas |
+
+---
+
+## 8. ANÁLISIS TÉCNICO DE REGLAS DE NEGOCIO Y CICLO DE VIDA
+
+**Objetivo:** Mapear los estados (`stsaprobac`) para configurar el State Machine de Odoo 19 y diferenciar borradores de aprobados. Identificar el ID de transacción para aislar Producción de otros módulos. Cuantificar registros para prever carga en Chatter e historial.
+
+### 8.1 Consulta: Mapeo de estados y transacciones
+
+**Query 8.1.1** — Estados, transacciones y tipos de aprobación:
+```sql
+SELECT DISTINCT stsaprobac, 'En Solicitudes (csolactfor)' as procedencia FROM csolactfor;
+SELECT DISTINCT stsaprobac, 'En Histórico Firmas (taprform1f)' as procedencia FROM taprform1f;
+SELECT DISTINCT transaccio, 'ID de proceso en csolactfor' as nota FROM csolactfor;
+SELECT DISTINCT tipaprob, 'Tipos de aprobadores en aprfor1f' as nota FROM aprfor1f;
+SELECT DISTINCT accion as tipo_operacion, 'Lógica de cambio en tmpdetfor' as contexto FROM tmpdetfor;
+SELECT DISTINCT stssolicitud as estado_sincro, 'Estado integración tmpdetfor' as contexto FROM tmpdetfor;
+
+ stsaprobac | procedencia 
+ ------------+-------------
+(0 rows)
+
+ stsaprobac | procedencia 
+ ------------+-------------
+(0 rows)
+
+ transaccio | nota 
+ ------------+------
+(0 rows)
+
+ tipaprob | nota 
+ ----------+------
+(0 rows)
+
+ tipo_operacion | contexto 
+ ----------------+----------
+(0 rows)
+
+ estado_sincro | contexto 
+ ---------------+----------
+(0 rows)
+```
+
+### 8.2 Consulta: Cuantificación de registros
+
+**Query 8.2.1** — Conteo de objetos:
+```sql
+SELECT 'Solicitudes de Activación' as objeto, COUNT(*) as total FROM csolactfor;
+SELECT 'Firmas y Logs históricos' as objeto, COUNT(*) as total FROM taprform1f;
+SELECT 'Fórmulas finales en producción' as objeto, COUNT(*) as total FROM forfab;
+
+          objeto           | total 
+ ---------------------------+-------
+ Solicitudes de Activación |     0
+(1 row)
+
+          objeto          | total 
+ --------------------------+-------
+ Firmas y Logs históricos |     0
+(1 row)
+
+             objeto             | total 
+ --------------------------------+-------
+ Fórmulas finales en producción | 70070
+(1 row)
+```
+
+**Hallazgo 8.2.1:** Todas las consultas de estados, transacciones y tipos de aprobación retornan 0 rows, confirmando que las tablas de trámite (`csolactfor`, `taprform1f`, `tmpdetfor`, `aprfor1f`) no tienen datos operativos para fórmulas de producción. El único dato relevante: `forfab` tiene 70,070 fórmulas finales. **No hay estados que mapear para el State Machine de Odoo desde las tablas legacy** — los estados (draft → pending → approved) se definirán desde cero.
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 8
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | No hay estados (`stsaprobac`) que mapear — todas las tablas de trámite en 0 | 8.1.1 | State Machine de Odoo se define desde cero (draft → pending → approved) |
+| 2 | `forfab` tiene 70,070 fórmulas finales | 8.2.1 | Volumen conocido para planificar migración |
+
+---
+
+## 9. INVESTIGACIÓN DE FIRMAS DIRECTAS EN MAESTRO DE PRODUCCIÓN
+
+**Objetivo:** Debido a que las tablas de trámite están vacías, se valida si la aprobación se registra directamente en el maestro mediante IDs de usuario.
+
+### 9.1 Consulta: IDs de aprobadores en `forfab`
+
+**Query 9.1.1** — IDs de aprobadores detectados:
+```sql
+SELECT DISTINCT aprobadop, 'ID Aprobador detectado' as metadato 
+FROM forfab 
+WHERE aprobadop IS NOT NULL AND aprobadop > 0 
+LIMIT 10;
+
+ aprobadop |        metadato        
+ -----------+------------------------
+    1708248 | ID Aprobador detectado
+       6881 | ID Aprobador detectado
+    1683322 | ID Aprobador detectado
+      29750 | ID Aprobador detectado
+    1668443 | ID Aprobador detectado
+    1668285 | ID Aprobador detectado
+    1657091 | ID Aprobador detectado
+      64435 | ID Aprobador detectado
+    1779648 | ID Aprobador detectado
+    1721708 | ID Aprobador detectado
+ (10 rows)
+```
+
+### 9.2 Consulta: Trazabilidad de aprobaciones
+
+**Query 9.2.1** — Muestra de trazabilidad:
+```sql
+SELECT compania, articulo, material, aprobadop, fecaprobadop, horaprobadop 
+FROM forfab 
+WHERE aprobadop IS NOT NULL AND aprobadop > 0 
+ORDER BY fecaprobadop DESC 
+LIMIT 5;
+
+ compania | articulo | material | aprobadop | fecaprobadop | horaprobadop 
+ ----------+----------+----------+-----------+--------------+--------------
+  0030     |    73145 |    73147 |   1708248 |              | 
+  0030     |    73145 |    73148 |   1708248 |              | 
+  0030     |    73278 |    20210 |   1708248 |              | 
+  0030     |    73145 |    73146 |   1708248 |              | 
+  0030     |    73145 |    26198 |   1708248 |              | 
+ (5 rows)
+```
+
+**Hallazgo 9.2.1:** Se confirma que la aprobación se persiste directamente en el maestro de producción `forfab`. Sin embargo, las columnas `fecaprobadop` y `horaprobadop` aparecen vacías en los registros recientes, lo que sugiere que el sistema original podría estar delegando la fecha a otra tabla de logs o que el trigger de actualización no se disparó. **Odoo deberá forzar el llenado de estos campos para mantener la integridad.**
+
+---
+
+### RESUMEN DE HALLAZGOS — SECCIÓN 9
+
+| # | Hallazgo | Consulta que lo determina | Impacto para Odoo 19 |
+|---|----------|--------------------------|---------------------|
+| 1 | Aprobación directa en `forfab` con IDs pero sin trazabilidad temporal | 9.2.1 | Odoo debe implementar auditoría completa (quién, cuándo, observaciones) |

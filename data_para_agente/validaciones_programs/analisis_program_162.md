@@ -1,4 +1,4 @@
-## validacion para program # 162 parafraseado con asistencia de gemini
+## validacion para program # 162  
 El agente nos proporciona unas primeras descripciones para las funciones de BM-CTL-Produccion_Mexico.xlsx . Desde luego lee su bm_ctl_produccion_descripciones.md correspondiente, sin embrago; para validar realizamos consultas a la base de datos mxbaje_local.Revisar [validacion program #: 162](data_para_agente/validaciones_programs/validacion_program_162.md) 
 
 ### Logica de validacion y hallazgos Tecnicos

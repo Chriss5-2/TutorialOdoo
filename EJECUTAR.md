@@ -273,6 +273,100 @@ Muestra el historial de aprobaciones por nivel. Se llena automaticamente al apro
 - **Vista:** Lista editable (`editable="bottom"`) para creacion rapida inline.
 - **Integracion futura:** Este modelo sera el insumo principal para el calculo de OEE y registro de tiempos muertos en Odoo 19.
 
+---
+
+### Probando program # 137 en la UI Odoo
+
+#### 1. Categorias de Lineas de Produccion (Catalogo)
+
+> **Que es:** Catalogo de categorias de lineas de produccion para clasificar lineas fisicas y agruparlas en reportes de capacidad, eficiencia y costos. Equivale a la tabla legacy `mfameq1f`.
+> **Donde:** `Mantenimiento → Clasificadores → Categorias de Lineas de Produccion` (seq 40). Tambien accesible desde `Costos → Costo SemiVariable → Variables de Produccion → Categoria Linea de Produccion` (seq 10). **Ambas rutas abren el mismo catalogo** — misma lista, mismos datos, misma funcionalidad. La duplicacion es intencional (igual que en el sistema legacy).
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Codigo | Texto | `001`, `025` | Codigo de la familia de equipos (heredado del legacy) |
+| Descripcion | Texto | `EQUIPOS DE ENVASADO` | Nombre legible de la categoria |
+| Area Funcional | Texto | `027`, `025` | Codigo de area funcional (18 valores documentados) |
+| Factor | Seleccion | `B` (Botella), `N` (No Botella) | Clasifica tipo de produccion. B=lineas de envasado/soplado/jarabes. N=etiquetas/termoencogible |
+| Funcion | Seleccion | `N` (Normal), `G` (Global) | G=transversal a todas las plantas (solo etiquetas y termoencogible) |
+| Almacen de Proceso | Texto | `83`, `85`, `53` | Codigo de almacen asociado (83=Produccion, 85=Bases, 86=Maquila, 53=Empaque) |
+| Activo | Boolean | `True`/`False` | Estado de la categoria |
+
+**Datos iniciales cargados (27 categorias — 15 activas + 12 inactivas del legacy):**
+
+**Categorias activas (15):**
+
+| Codigo | Descripcion | Area | Factor | Funcion | Almacen | Lineas Configuradas (legacy) |
+|---|---|---|---|---|---|---|
+| 001 | EQUIPOS DE ENVASADO | 027 | B | N | 83 | 62 |
+| 002 | EQUIPOS DE SOPLADO | 026 | B | N | 83 | 0 |
+| 003 | TANQUES DE JARABE | 025 | B | N | 83 | 1 |
+| 005 | TANQUES DE TRATAMIENTO DE AGUA | 025 | B | N | 83 | 0 |
+| 008 | BASES TERMINADAS | 032 | B | N | 85 | 0 |
+| 009 | BASES INTERMEDIAS | 032 | B | N | 85 | 0 |
+| 010 | AZUCAR LIQUIDA | 025 | B | N | 83 | 1 |
+| 017 | UNIDAD DE PLOTEO | 801 | B | N | - | 1 |
+| 019 | MAQUILA | 035 | B | N | 86 | 2 |
+| 021 | REEMPAQUES | 051 | B | N | - | 0 |
+| 025 | PRODUCCION ETIQUETAS | 031 | N | G | 53 | 0 |
+| 026 | PRODUCCION TERMOENCOGIBLE | 065 | N | G | 53 | 1 |
+| 027 | PRODUCCION BOTELLA | 022 | B | N | 83 | 0 |
+| 051 | PRODUCCION EXHIBIDORES | 072 | B | N | 53 | 2 |
+| 054 | EXTRUIDO SNACKS | - | - | N | - | 0 |
+
+**Categorias inactivas (12, active=False):**
+
+| Codigo | Descripcion | Motivo probable |
+|---|---|---|
+| 004 | LAVADORAS | Proceso discontinuado |
+| 006 | ACONDICIONADOS | Proceso discontinuado |
+| 007 | INYECTORAS | Proceso discontinuado |
+| 011 | COMPRESION | Proceso discontinuado |
+| 012 | AGUA EMBOTELLADA | Linea descontinuada |
+| 013 | ISOTONICAS | Inactiva pero con 2 lineas en caplinea (inconsistencia a validar) |
+| 014 | AZUCAR LIQUIDA | Duplicada con 010, area incorrecta (101) |
+| 015 | ENVASADOS JARABES TERMINADOS | Proceso discontinuado |
+| 016 | NECTARES | Linea descontinuada |
+| 018 | TANQUES DE JARABE SIMPLE | Proceso discontinuado |
+| 020 | EQUIPOS DE HIELO | Proceso discontinuado |
+| 050 | TRATAMIENTO DE AGUA CERVEZA | No aplica a Mexico bebidas |
+
+**Campos automaticos:**
+- `Nombre`: Se calcula como `{efamilia} - {descripcion}`
+- `Fecha/Hora/Usuario Creacion`: Se llenan automaticamente al crear
+- `Fecha/Hora/Usuario Ultima Mod.`: Se actualizan automaticamente al editar
+
+**Filtros disponibles en el Search View:**
+- **Activos:** Muestra solo categorias activas
+- **Inactivos:** Muestra solo categorias inactivas
+- **Group By Factor:** Agrupa por factor (Botella / No Botella)
+- **Group By Funcion:** Agrupa por funcion (Normal / Global)
+- **Group By Area:** Agrupa por area funcional
+- **Group By Almacen:** Agrupa por almacen de proceso
+
+---
+
+#### Orden recomendado de uso
+
+1. **Primero:** Revisar el catalogo pre-cargado en **Categorias de Lineas de Produccion** (`Mantenimiento → Clasificadores → Categorias de Lineas`). Ya vienen las 15 activas y 12 inactivas del legacy.
+2. **Segundo:** Verificar el caso de `013 ISOTONICAS` — inactiva en el legacy pero con 2 lineas fisicas configuradas en `caplinea`. Si las lineas existen, reactivar y revisar factor (probablemente B por ser envasado).
+3. **Tercero:** Verificar el caso de `014 AZUCAR LIQUIDA` (inactiva) vs `010 AZUCAR LIQUIDA` (activa) — son duplicadas. Mantener solo 010.
+4. **Cuarto:** Si en el futuro se configura Inventario en Odoo, mapear los codigos `almproc` (83, 85, 86, 53) a `stock.warehouse` via External ID.
+5. **Quinto:** Este catalogo sera la base para los modulos futuros de lineas de produccion, capacidad y costos semi-variables.
+
+---
+
+#### Notas tecnicas
+
+- **Origen:** Migracion directa de la tabla legacy `mfameq1f`. 397 registros para Mexico (0030) distribuidos en 127 sucursales, pero solo 10 sucursales operativas (las demas son zombi con 1 registro). Catalogo identico compartido con Peru (0032) y Ecuador (0036).
+- **Columnas excluidas:** De las 28 columnas originales, se migraron solo 10. Se excluyeron: 11 campos bytea (flags de UI del legacy, dump hex confirmo que son booleanos F/T sin uso transaccional), `codagru` (siempre vacio en 3,429 registros verificados), `nivcost` (97% en default 0), campos de auditoria `sucursal` (no se replica por sucursal en Odoo).
+- **Menu principal:** Secuencia 40 bajo `mantenimiento_clasificadores` (despues de Mermas secuencia 30).
+- **Menu secundario:** Secuencia 10 bajo `cost_costSeVa_varProduccion_menu` en Costos (duplicado intencional, igual que en el legacy).
+- **Vista:** Lista editable (`editable="bottom"`) para creacion y edicion rapida inline.
+- **Catalogo global:** No usa `company_id`. Las 27 categorias son identicas para Mexico, Peru y Ecuador. Si una compañia necesita categorias exclusivas, se agregan con company_id especifico.
+- **Warning ISOTONICAS:** La categoria `013 ISOTONICAS` esta inactiva en TODAS las sucursales de 0030, pero tiene 2 lineas configuradas en `caplinea`. Validar con negocio si debe reactivarse.
+- **Integracion futura:** Este modelo sera referenciado por: lineas de produccion fisica (`Many2one` futuro), capacidad de linea (`caplinea` → 553 registros), tipos de tarima (`ttarima` → 24 registros), y modulos de costos semi-variables.
+
 ### Probando program # 135 en la UI Odoo
 
 #### 1. Tipos de Mermas (Catalogo)

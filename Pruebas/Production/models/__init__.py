@@ -17,4 +17,6 @@ from . import program_133_paradas
 from . import program_135_mermas
 # program 135 - registro transaccional de mermas
 from . import program_135_merma_registro
+# program 137 - catalogo de categorias de lineas de produccion
+from . import program_137_categoria_linea
 

@@ -10,3 +10,4 @@ access_bm_produccion_config,bm.ctl.produccion.config,model_bm_ctl_produccion_con
 access_bm_ctl_produccion_parada,bm.ctl.produccion.parada,model_bm_ctl_produccion_parada,base.group_user,1,1,1,1
 access_bm_ctl_produccion_merma,bm.ctl.produccion.merma,model_bm_ctl_produccion_merma,base.group_user,1,1,1,1
 access_bm_ctl_produccion_merma_registro,bm.ctl.produccion.merma.registro,model_bm_ctl_produccion_merma_registro,base.group_user,1,1,1,1
+access_bm_ctl_produccion_categoria_linea,bm.ctl.produccion.categoria.linea,model_bm_ctl_produccion_categoria_linea,base.group_user,1,1,1,1
