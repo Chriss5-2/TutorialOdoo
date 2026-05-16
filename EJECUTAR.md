@@ -481,3 +481,79 @@ Muestra el historial de aprobaciones por nivel. Se llena automaticamente al apro
 - **Campos legacy:** Se mantiene `tipart_original` para trazabilidad con los datos historicos de `mermastdmes`.
 - **Integracion futura:** Cuando se instalen los modulos `product` y `mrp`, los campos `insumo_codigo` y `nroop` podran reemplazarse por Many2one a `product.product` y `mrp.production` para obtener automaticamente costos y recetas.
 - **Impacto economico:** Los tipos EMP y ETQ representan el mayor costo de merma historico: Poly Stretch ($45.6M), Etiquetas ($34.5M), Separadores ($23.4M).
+
+---
+
+### Probando program # 138 en la UI Odoo
+
+#### 1. Familia de Produccion (Configuracion por Sucursal)
+
+> **Que es:** Configuracion que activa o desactiva categorias de lineas de produccion por sucursal. Equivale a la tabla legacy `sucproc`. Define que tipos de produccion (Envasado, Jarabes, Maquila, Reempaques) estan operativos en cada planta. **No es** un catalogo de familias de articulo (gaseosas, jugos, agua) — eso lo maneja `mfamil1f` (inventario contable).
+> **Donde:** `Mantenimiento → Configuraciones → Familia de Produccion` (seq 10 — primer item de Configuraciones)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Sucursal | Many2one (selector) | `0001 - Puebla` | Planta donde se activa/desactiva la categoria |
+| Categoria Linea | Many2one (selector) | `001 - EQUIPOS DE ENVASADO` | Referencia al catalogo del Program #137 |
+| Activo | Boolean | `True` / `False` | Estado de la configuracion (activo = `A`, inactivo = `I`) |
+
+**Datos iniciales cargados (16 registros — 4 sucursales × 4 categorias del legacy `sucproc`):**
+
+| Sucursal | Categoria | Codigo | Descripcion Categoria |
+|---|---|---|---|
+| 0001 (Puebla) | 001 | 001 | EQUIPOS DE ENVASADO |
+| 0001 (Puebla) | 003 | 003 | TANQUES DE JARABE |
+| 0001 (Puebla) | 019 | 019 | MAQUILA |
+| 0001 (Puebla) | 021 | 021 | REEMPAQUES |
+| 0068 (Monterrey) | 001 | 001 | EQUIPOS DE ENVASADO |
+| 0068 (Monterrey) | 003 | 003 | TANQUES DE JARABE |
+| 0068 (Monterrey) | 019 | 019 | MAQUILA |
+| 0068 (Monterrey) | 021 | 021 | REEMPAQUES |
+| 0070 | 001 | 001 | EQUIPOS DE ENVASADO |
+| 0070 | 003 | 003 | TANQUES DE JARABE |
+| 0070 | 019 | 019 | MAQUILA |
+| 0070 | 021 | 021 | REEMPAQUES |
+| 0108 | 001 | 001 | EQUIPOS DE ENVASADO |
+| 0108 | 003 | 003 | TANQUES DE JARABE |
+| 0108 | 019 | 019 | MAQUILA |
+| 0108 | 021 | 021 | REEMPAQUES |
+
+**Campos automaticos:**
+- `Nombre`: Se calcula como `{codigo_sucursal} / {codigo_categoria}`. Ejemplo: `0001 / 001`, `0068 / 019`
+- `Fecha/Hora/Usuario Creacion`: Se llenan automaticamente al crear
+- `Fecha/Hora/Usuario Ultima Mod.`: Se actualizan automaticamente al editar
+- `Compania`: Se asigna automaticamente (`self.env.company`)
+
+**Filtros disponibles en el Search View:**
+- **Activos:** Muestra solo las configuraciones activas
+- **Inactivos:** Muestra solo las configuraciones inactivas
+- **Group By Sucursal:** Agrupa por planta (para ver que categorias tiene cada sucursal)
+- **Group By Categoria:** Agrupa por categoria de linea (para ver en que sucursales esta activa cada categoria)
+
+---
+
+#### Orden recomendado de uso
+
+1. **Primero:** Revisar los 16 registros pre-cargados en **Familia de Produccion** (`Mantenimiento → Configuraciones → Familia de Produccion`). Verificar que las 4 sucursales tienen las 4 categorias activas.
+2. **Segundo:** Si una sucursal deja de operar temporalmente una categoria (ej: la sucursal 0070 no produce maquila este mes), desactivar el registro correspondiente con el switch `Activo`.
+3. **Tercero:** Si se abre una nueva sucursal o se reactiva una categoria, crear un nuevo registro seleccionando Sucursal y Categoria Linea. El switch activo viene prendido por defecto.
+4. **Cuarto:** Si se necesita agregar categorias adicionales (Soplado, Agua, Bases, Azucar, etc.), crearlas en el catalogo de **Categorias de Lineas** (Program #137) y luego activarlas por sucursal en esta pantalla.
+
+---
+
+#### Notas tecnicas
+
+- **Origen:** Migracion directa de la tabla legacy `sucproc` con 16 registros para Mexico (0030). La tabla `sucproc` es minimalista: PK `(compania, sucursal, efamilia)` + campo `estado` (A/I) + auditoria. La equivalencia `efamilia` del legacy se resuelve via Many2one a `bm.ctl.produccion.categoria.linea`.
+- **Relacion Program #137 ↔ #138:** El #137 es "que categorias existen" (catalogo maestro de 27 categorias). El #138 es "cuales estan prendidas en cada planta" (configuracion 16 registros). Son dos caras de la misma moneda con dos accesos distintos en el menu: Clasificadores vs Configuraciones.
+- **Por que solo 4 de 27 categorias:** Las 4 categorias configuradas en `sucproc` (001 Envasado, 003 Jarabes, 019 Maquila, 021 Reempaques) son las lineas de produccion **directas** — las que transforman materia prima en producto terminado. Las otras 11 categorias activas del catalogo #137 (Soplado, Agua, Bases, Azucar, Ploteo, Etiquetas, Termoencogible, Botella, Exhibidores, Snacks) son lineas **auxiliares/intermedias** que se activan implicitamente desde otros modulos.
+- **Por que solo 4 de 10 sucursales:** Solo las sucursales con produccion directa (0001, 0068, 0070, 0108) tienen configuracion en `sucproc`. Las otras 6 sucursales operativas (0086, 0112, 0113, 0114, 0115, 0116) heredan configuracion de la sucursal principal.
+- **Menu:** Secuencia 10 bajo `mant_configuraciones_menu` (primer item de Configuraciones).
+- **Vista:** Lista editable (`editable="bottom"`) con solo 3 columnas: Sucursal, Categoria, Activo. Minimalista e intuitiva para activar/desactivar con un clic.
+- **Modelo independiente (no `_inherits`):** `sucproc` tiene su propia PK y sus propios campos de auditoria, distintos de `mfameq1f`. El modelo usa Many2one a `bm.ctl.produccion.categoria.linea` en lugar de herencia.
+- **Seguridad:** Acceso total (CRUD) para `base.group_user`. Cualquier usuario autenticado puede gestionar la configuracion.
+- **Integracion futura:** Este modelo servira como validacion para:
+    - Creacion de lineas fisicas de produccion (validar que la combinacion sucursal-categoria este activa)
+    - Planificacion de produccion (DRP) — restringir planificacion a categorias activas por sucursal
+    - Reportes de capacidad instalada por sucursal (cruzar con `caplinea`)
+    - Control de acceso por sucursal (restringir vistas de usuario a su planta)
+    - Wizard de activacion/desactivacion masiva (copiar config de una sucursal a otra)

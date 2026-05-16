@@ -256,3 +256,7 @@ docker restart odoo19-server-dev
 docker exec -u root odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
 ```
 
+### Errores de conexion debido a wsl
+```bash
+wsl --shutdown
+```

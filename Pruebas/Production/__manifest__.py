@@ -12,6 +12,8 @@
         'views/program_135_mermas.xml',
         'views/program_135_merma_registro.xml',
         'views/program_137_categoria_linea.xml',
+        'views/sucursal_views.xml',
+        'views/program_138_familia_views.xml',
         'views/produccion_menu.xml',
         'views/planeamiento_menu.xml',
         'views/control_calidad_menu.xml',
@@ -29,5 +31,7 @@
         'views/program_162_formula_aprobacion.xml',
         'data/program_135_merma_data.xml',
         'data/program_137_categoria_linea_data.xml',
+        'data/sucursal_data.xml',
+        'data/program_138_familia_data.xml',
     ]
 }
