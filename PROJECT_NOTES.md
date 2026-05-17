@@ -263,3 +263,62 @@ wsl --shutdown
 
 ### Cambiar de plan a Build
 Usar tab →←
+
+---
+
+### Conversion de fechas julianas (AS/400) a fecha humana
+
+El sistema legacy Big Magic usa fechas julianas de 6 digitos con offset `730000` (estandar AS/400).
+
+**Formula de creacion:**
+```
+dias_desde_1_enero_del_anio_actual + 730000
+```
+Ej: 17 mayo 2026 → dia 137 del año → `137 + 730000 = 730137`
+
+**Conversion inversa (manual, paso a paso):**
+
+```text
+# Ejemplo: 739812
+1. 739812 - 730000 = 9812
+2. Ubicar el juliano del 1 enero del año implicado:
+   1 enero 2026 → juliano 739617
+3. 739812 - 739617 = 195  →  dia 195 del año
+4. Tabla de acumulados por mes:
+
+   | Fin de mes | Dia acumulado |
+   |---|---|
+   | Enero | 31 |
+   | Febrero | 59 |
+   | Marzo | 90 |
+   | Abril | 120 |
+   | Mayo | 151 |
+   | Junio | 181 |
+   | Julio | 212 |
+   | Agosto | 243 |
+   | Septiembre | 273 |
+   | Octubre | 304 |
+   | Noviembre | 334 |
+   | Diciembre | 365 |
+5. 195 entre 181 (fin junio) y 212 (fin julio) → JULIO
+   195 - 181 = 14 → dia 15
+6. Resultado: 15 de julio de 2026
+```
+
+**Conversion instantanea (terminal):**
+```bash
+python3 -c "from datetime import date, timedelta; print(date(1,1,1) + timedelta(days=739812 - 1))"
+# → 2026-07-15
+```
+
+**En SQL (PostgreSQL):**
+```sql
+SELECT date '0001-01-01' + (739812 - 1);
+-- → 2026-07-15
+```
+
+**En Odoo:** Los modelos ya incluyen campo computado `fecha_display` que hace la conversion automatica en la UI.
+
+### Resumen de los modelos (mantenimiento) implementados 
+Detalle en validaciones_analisis/borrador_consolidado.md
+

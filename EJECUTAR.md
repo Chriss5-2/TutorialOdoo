@@ -8,9 +8,9 @@
 
 | Campo | Formato | Ejemplo | Nota |
 |---|---|---|---|
+| Secuencia | Numero entero | `10`, `20`, `30` | Orden visual (multiplos de 10) |
 | Codigo Turno | Numero entero | `1`, `2`, `3` | ID unico del turno |
 | Descripcion | Texto | `PRIMER TURNO` | Nombre legible |
-| Secuencia | Numero entero | `10`, `20`, `30` | Orden visual (multiplos de 10) |
 | Hora Inicio | Texto `HHMMSS` | `063000` | Hora 24h sin separadores |
 | Hora Fin | Texto `HHMMSS` | `143000` | Si es menor que inicio = turno nocturno |
 
@@ -557,3 +557,77 @@ Muestra el historial de aprobaciones por nivel. Se llena automaticamente al apro
     - Reportes de capacidad instalada por sucursal (cruzar con `caplinea`)
     - Control de acceso por sucursal (restringir vistas de usuario a su planta)
     - Wizard de activacion/desactivacion masiva (copiar config de una sucursal a otra)
+
+---
+
+### Probando program # 574 en la UI Odoo
+
+#### 1. Procesos Productivos (Catalogo)
+
+> **Que es:** Catalogo de procesos productivos que componen la cadena de fabricacion de un producto. Define la secuencia de operaciones (Soplado → Jarabe → Bases → Llenado → Etiquetado → Empacado) y el area funcional asociada de cada proceso. Es la base para el plan de produccion y el calculo de tiempos estandar.
+> **Donde:** `Mantenimiento → Configuraciones → Configura Procesos Productivos` (seq 20 — segundo item de Configuraciones, despues de Familia de Produccion)
+
+| Campo | Formato | Ejemplo | Nota |
+|---|---|---|---|
+| Codigo | Texto (3 letras) | `SOP`, `LLE`, `ETQ` | Codigo abreviado del proceso |
+| Descripcion | Texto | `Soplado`, `Llenado / Envasado` | Nombre legible del proceso |
+| Secuencia | Numero entero | `10`, `20`, `40` | Orden en la cadena productiva (multiplos de 10) |
+| Categoria Linea | Many2one (selector) | `002 - EQUIPOS DE SOPLADO` | Area funcional del Program #137 |
+| Activo | Boolean | `True` / `False` | Estado del proceso |
+
+**Datos iniciales cargados (6 procesos — cadena completa de bebidas):**
+
+| Codigo | Descripcion | Secuencia | Categoria (#137) | Area |
+|---|---|---|---|---|
+| SOP | Soplado | 10 | 002 - EQUIPOS DE SOPLADO | 026 |
+| JAR | Preparacion de Jarabe | 20 | 003 - TANQUES DE JARABE | 025 |
+| BAS | Preparacion de Bases | 30 | 008 - BASES TERMINADAS | 032 |
+| LLE | Llenado / Envasado | 40 | 001 - EQUIPOS DE ENVASADO | 027 |
+| ETQ | Etiquetado | 50 | 025 - PRODUCCION ETIQUETAS | 031 |
+| EMP | Empacado | 60 | 021 - REEMPAQUES | 051 |
+
+**Flujo de la cadena productiva:**
+
+```
+[SOP 10] → [JAR 20] → [BAS 30] → [LLE 40] → [ETQ 50] → [EMP 60]
+ Soplado    Jarabe     Bases      Llenado    Etiquetado  Empacado
+ (botellas) (mezcla)   (conc.)    (envasado)  (etiquetas) (cajas/tarimas)
+```
+
+**Campos automaticos:**
+- `Nombre`: Se calcula como `{codigo} - {descripcion}`. Ejemplo: `SOP - Soplado`, `LLE - Llenado / Envasado`
+- `Fecha/Hora/Usuario Creacion`: Se llenan automaticamente al crear
+- `Fecha/Hora/Usuario Ultima Mod.`: Se actualizan automaticamente al editar
+- `Compania`: Se asigna automaticamente (`self.env.company`)
+
+**Filtros disponibles en el Search View:**
+- **Activos:** Muestra solo procesos activos
+- **Inactivos:** Muestra solo procesos inactivos
+- **Group By Categoria:** Agrupa por categoria de linea para ver que procesos pertenecen a cada area
+
+---
+
+#### Orden recomendado de uso
+
+1. **Primero:** Revisar los 6 procesos pre-cargados en **Configura Procesos Productivos** (`Mantenimiento → Configuraciones → Configura Procesos Productivos`). Verificar que cubren la cadena productiva de la planta.
+2. **Segundo:** Verificar que las categorias del Program #137 referenciadas (001, 002, 003, 008, 021, 025) esten activas en las sucursales via Program #138 (Familia de Produccion).
+3. **Tercero:** Agregar procesos adicionales si la planta tiene operaciones especiales (ej: `LAV` Lavado de Botellas entre Soplado y Jarabe con secuencia 15, o `TAP` Tapado entre Llenado y Etiquetado con secuencia 45).
+4. **Cuarto:** Ajustar la secuencia si el orden real de produccion difiere del estandar. Usar multiplos de 10 para facilitar inserciones futuras.
+
+---
+
+#### Notas tecnicas
+
+- **Origen:** Creado desde cero en Odoo 19 ("Clean Slate"). La tabla legacy `mproprod1f` estaba completamente vacia (0 registros). Los Stored Procedures asociados (`USP_PROCESO_PRODUCCION`, `USP_PROD_PROCPROD_ELIMINAVALIDA`, `PR_ERP_FNZ_QRY_WS_CREAPROCESOFABRICACION`) no existen en `mxbdaje_local` — eran de otras bases del ecosistema Big Magic y nunca se desplegaron en Mexico. Sin datos que migrar, sin logica que replicar.
+- **Relacion Program #137 → #574:** #137 cataloga las areas funcionales (Envasado, Soplado, Etiquetas...). #574 asigna cada proceso al area correcta via Many2one con `ondelete='restrict'` — no se puede borrar una categoria si tiene procesos configurados.
+- **Relacion Program #138 → #574:** #138 define que categorias operan en cada sucursal. #574 hereda esa restriccion implicitamente: si la sucursal 0070 no tiene activa la categoria 001 (Envasado), no deberia poder asignar el proceso LLE (Llenado) a lineas de esa sucursal.
+- **Menu:** Secuencia 20 bajo `mant_configuraciones_menu` (segundo item de Configuraciones, despues de Familia de Produccion seq 10).
+- **Vista:** Lista editable (`editable="bottom"`) con 5 columnas: codigo, descripcion, secuencia, categoria, activo.
+- **Secuencias en multiplos de 10:** Permite insertar procesos intermedios sin renumerar (ej: insertar `TAP` Tapado en secuencia 45 entre Llenado y Etiquetado).
+- **Independencia de `mrp`:** El modelo no depende del modulo de Manufactura de Odoo. La conexion con Work Centers (`mrp.workcenter`) queda para integracion futura via el campo `categoria_linea_id`.
+- **Seguridad:** Acceso total (CRUD) para `base.group_user`.
+- **Integracion futura:** Este modelo sera la base para:
+    - Hoja de ruta de fabricacion (secuencia de operaciones por OP)
+    - Calculo de tiempos estandar por SKU (suma de tiempos por proceso)
+    - Asignacion de lineas fisicas a procesos (Many2one desde `bm.ctl.produccion.linea`)
+    - Mapeo a `mrp.routing.workcenter` si se adopta Manufactura de Odoo

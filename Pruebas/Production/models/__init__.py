@@ -23,4 +23,6 @@ from . import program_137_categoria_linea
 from . import sucursal
 # program 138 - familia de produccion por sucursal
 from . import program_138_familia
+# program 574 - configuracion de procesos productivos
+from . import program_574_proceso
 

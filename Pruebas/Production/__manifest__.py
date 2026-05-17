@@ -33,5 +33,7 @@
         'data/program_137_categoria_linea_data.xml',
         'data/sucursal_data.xml',
         'data/program_138_familia_data.xml',
+        'views/program_574_proceso_views.xml',
+        'data/program_574_proceso_data.xml',
     ]
 }
