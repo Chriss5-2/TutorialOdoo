@@ -322,3 +322,26 @@ SELECT date '0001-01-01' + (739812 - 1);
 ### Resumen de los modelos (mantenimiento) implementados 
 Detalle en validaciones_analisis/borrador_consolidado.md
 
+### Resumen de ejecucion (primera vez)
+```bash
+# 1. Arrancar Docker (WSL2)
+sudo service docker start
+
+# 2. Levantar los contenedores (si no existen, los crea)
+cd ~/TutorialOdoo/Odoo-19-Develop
+docker compose up -d
+
+# 3. Crear la base de datos (solo si no existe)
+docker exec odoo19-db-dev psql -U chrizzzadmin -c "CREATE DATABASE odoo_aje;" 2>/dev/null || echo "BD ya existe, omitiendo..."
+
+# 4. Inicializar el modulo Production
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+
+# 5. Acceder a Odoo: http://localhost:8070
+```
+
+### Resumen de ejecucion (reinicio con cambios en codigo)
+```bash
+docker restart odoo19-server-dev
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+```
