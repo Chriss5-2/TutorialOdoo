@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Activas (15) -->
+        <record id="categoria_001" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">001</field>
+            <field name="descripcion">EQUIPOS DE ENVASADO</field>
+            <field name="area">027</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_002" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">002</field>
+            <field name="descripcion">EQUIPOS DE SOPLADO</field>
+            <field name="area">026</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_003" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">003</field>
+            <field name="descripcion">TANQUES DE JARABE</field>
+            <field name="area">025</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_005" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">005</field>
+            <field name="descripcion">TANQUES DE TRATAMIENTO DE AGUA</field>
+            <field name="area">025</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_008" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">008</field>
+            <field name="descripcion">BASES TERMINADAS</field>
+            <field name="area">032</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">85</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_009" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">009</field>
+            <field name="descripcion">BASES INTERMEDIAS</field>
+            <field name="area">032</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">85</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_010" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">010</field>
+            <field name="descripcion">AZUCAR LIQUIDA</field>
+            <field name="area">025</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_017" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">017</field>
+            <field name="descripcion">UNIDAD DE PLOTEO</field>
+            <field name="area">801</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_019" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">019</field>
+            <field name="descripcion">MAQUILA</field>
+            <field name="area">035</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">86</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_021" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">021</field>
+            <field name="descripcion">REEMPAQUES</field>
+            <field name="area">051</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_025" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">025</field>
+            <field name="descripcion">PRODUCCION ETIQUETAS</field>
+            <field name="area">031</field>
+            <field name="factor">N</field>
+            <field name="funcion">G</field>
+            <field name="almproc">53</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_026" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">026</field>
+            <field name="descripcion">PRODUCCION TERMOENCOGIBLE</field>
+            <field name="area">065</field>
+            <field name="factor">N</field>
+            <field name="funcion">G</field>
+            <field name="almproc">53</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_027" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">027</field>
+            <field name="descripcion">PRODUCCION BOTELLA</field>
+            <field name="area">022</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">83</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_051" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">051</field>
+            <field name="descripcion">PRODUCCION EXHIBIDORES</field>
+            <field name="area">072</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="almproc">53</field>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="categoria_054" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">054</field>
+            <field name="descripcion">EXTRUIDO SNACKS</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <!-- Inactivas (12) -->
+        <record id="categoria_004" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">004</field>
+            <field name="descripcion">LAVADORAS</field>
+            <field name="area">101</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_006" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">006</field>
+            <field name="descripcion">ACONDICIONADOS</field>
+            <field name="area">034</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_007" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">007</field>
+            <field name="descripcion">INYECTORAS</field>
+            <field name="area">029</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_011" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">011</field>
+            <field name="descripcion">COMPRESION</field>
+            <field name="area">030</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_012" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">012</field>
+            <field name="descripcion">AGUA EMBOTELLADA</field>
+            <field name="area">101</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_013" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">013</field>
+            <field name="descripcion">ISOTONICAS</field>
+            <field name="area">101</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_014" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">014</field>
+            <field name="descripcion">AZUCAR LIQUIDA</field>
+            <field name="area">101</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_015" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">015</field>
+            <field name="descripcion">ENVASADOS JARABES TERMINADOS</field>
+            <field name="area">027</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_016" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">016</field>
+            <field name="descripcion">NECTARES</field>
+            <field name="area">101</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_018" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">018</field>
+            <field name="descripcion">TANQUES DE JARABE SIMPLE</field>
+            <field name="area">503</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_020" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">020</field>
+            <field name="descripcion">EQUIPOS DE HIELO</field>
+            <field name="area">052</field>
+            <field name="factor">B</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+        <record id="categoria_050" model="bm.ctl.produccion.categoria.linea">
+            <field name="efamilia">050</field>
+            <field name="descripcion">TRATAMIENTO DE AGUA CERVEZA</field>
+            <field name="area">024</field>
+            <field name="funcion">N</field>
+            <field name="activo" eval="False"/>
+        </record>
+    </data>
+</odoo>

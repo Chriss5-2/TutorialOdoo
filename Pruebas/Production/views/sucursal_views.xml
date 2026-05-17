@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_sucursal_list" model="ir.ui.view">
+            <field name="name">bm.sucursal.list</field>
+            <field name="model">bm.sucursal</field>
+            <field name="arch" type="xml">
+                <list string="Sucursales" editable="bottom">
+                    <field name="codigo"/>
+                    <field name="nombre"/>
+                    <field name="activo"/>
+                    <field name="company_id" invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_sucursal_form" model="ir.ui.view">
+            <field name="name">bm.sucursal.form</field>
+            <field name="model">bm.sucursal</field>
+            <field name="arch" type="xml">
+                <form string="Sucursal" edit="true">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Datos de la Sucursal">
+                                <field name="codigo"/>
+                                <field name="nombre"/>
+                                <field name="activo"/>
+                                <field name="company_id"/>
+                            </group>
+                            <group string="Auditoria">
+                                <field name="feccrea" readonly="1"/>
+                                <field name="horcrea" readonly="1"/>
+                                <field name="usucrea" readonly="1"/>
+                                <field name="fecultmod" readonly="1"/>
+                                <field name="horultmod" readonly="1"/>
+                                <field name="usuaulmod" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_sucursal_search" model="ir.ui.view">
+            <field name="name">bm.sucursal.search</field>
+            <field name="model">bm.sucursal</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Sucursales">
+                    <field name="codigo"/>
+                    <field name="nombre"/>
+                    <separator/>
+                    <filter name="activos" string="Activos" domain="[('activo', '=', True)]"/>
+                    <filter name="inactivos" string="Inactivos" domain="[('activo', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_sucursal" model="ir.actions.act_window">
+            <field name="name">Sucursales</field>
+            <field name="res_model">bm.sucursal</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea el catalogo de sucursales
+                </p>
+                <p>
+                    Registra los codigos y nombres de las sucursales operativas.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

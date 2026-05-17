@@ -1,19 +1,19 @@
-# Analisis del BM-CTL-Produccion_Mexico.xlsx y Produccion_arbol_funciones.html
+## Analisis del BM-CTL-Produccion_Mexico.xlsx y Produccion_arbol_funciones.html
 
-## Jerarquia de menus
+### Jerarquia de menus
 Un menu no es mas que una direccion postal. No contiene datos, solo sirve para clasificar y agrupas
 1. Menu raiz(el modulo): Es el contenedor* mas grande (ej Mantenimiento) .En odoo , esto suele aparecer como un icono en el tablero principal-
 2. Sub-Menu (categoria): Agrupa funciones similares(Clasificadores o configuraciones).Su funcion es puramente organizativa para que el usuario no vea 50 opciones de golpe, por ejemplo
 3. Menu de accion (el acceso): Es el nivel más bajo (el circulo azul ej Turnos)
 
-## los programas(la unidad funcional)
+### los programas(la unidad funcional)
 En el sistema antiguo, un programa es una pieza de codigo cerrada.En odoo , un "programa" se traduce tecnicamente en una **accion de ventana**(ir.actions.act_window)<br>
 
 Un programa tiene :
 1. EL modelo (la tabla): Si el programa es **Turnos**, el modelo es la tabla en PostgreSQL que guarda el nombre del turno, hora de inicio y fin.
 2. La vista(La intefaz): Es el diseño de la pantalla(formulario para editar, lista para ver todos)
 3. La logica (python/triggers): Es lo que ocurre cuando se guarda.Aqui nos conectamos con AJE.Por ejemplo , si un programa de "produccion" registra una cantidad, la logica dispara el Recalculo Total que se trabaja en la base datos.
-## Analisis del arbol: El semaforo de mexico
+### Analisis del arbol: El semaforo de mexico
 1. Circulo Azul solido: Programa operativo y necesario.Requiere un archivo xml con su **menuitem** , su **action** y su modelo de base de datos asociado.
 2. Circulo con borde rojo: Son las ramas muertas
     - Tipo de carton o parametro para Max y Min
@@ -31,10 +31,10 @@ Ejemplo
 +-----------------------+--------------------------+------------------------------+
 
 ```
-## Modulos funcionales
+### Modulos funcionales
 Se ven modulos funcionales , en odoo seran los menus que organizan el trabajo de la planta.
  
-### Mantenimiento 
+#### Mantenimiento 
 Es el mantenimiento de los datos maestros.Aqui se crean los turnos , se configuran las lineas de produccion y las etiquetas.
 - Qué hace : Aqui se definen los parametros base: los turnos de trabajo, las lineas de produccion (llenadoras , etiquetadoras) los motivos de por que se detiene una máquina y como deben ser las etiquetas.
 - En mexico : Es vital , se usa para configurar todo el entorno antes de empezar a fabricar 
@@ -82,43 +82,266 @@ Los demas modulos siguen la misma logica
 
 Por ejemplo para planeamiento, se tendra un **planeamiento_menu.xml**.Dentro de este, se creara el menu "Planeamiento" y se indicara que su **parent** es el ID que se define en el archivo principal.
 
-### Planeamiento (Estrategia)
+#### Planeamiento (Estrategia)
 
 Se decide cuándo y cuánto fabricar
 - Qué hace: Gestiona la capacidad de las lineas. Si mexico necesita producir 1 millon de litros de bebida , aqui se calcula si las lineas tiene capacidad fisica para hacerlo en el tiempo esperado.
 - En Mexico: Se usa para mapear sucursales y lanzar ordenes de produccion desde el sistema de planificacion (AVAIL)
  
 
-### Produccion (Ejecución)
+#### Produccion (Ejecución)
 Es el corazon operativa de la fabrica
 - Que hace? : Aquí se pisa la planta.Se lanzan las ordenes de produccion (OP) ,se registra cuánta bebida se tiró(mermas) , cuántas horas trabajo el personal y se sacan los reportes diarios de eficiencia
 - En Mexico: Es donde ocurre el mayor volumen de trasancciones diarias
 
-### Control de Calidad (filtro)
+#### Control de Calidad (filtro)
 Asegura que el producto sea seguro para el consumo
 - Que hace?: Define los planes de inspeccion .Por ejemplo "cada 30 minutos hay que medir el nivel de gas de la bebida"
 - En Mexico: Se usa principalmente para el Plan de inspeccion y aprobar si un lote sale a la venta o se queda en la cuarentena.
 
-### Costos(El dinero)
+#### Costos(El dinero)
 Traduce lo anterior a terminos financieros
 - Que hace?: Calcula el costo real de produccion.Suma el valor de los insumos (azucar , botellas), la mano de obra y los gastos indirectos (luz, agua) para decir cuanto costo cada unidad producida.
 
 - En Mexico : muy importante para la simulacion de costos y control del "costo estandar"
 
-### Utils / Utilidades (Las herramientas de auxilio)
+#### Utils / Utilidades (Las herramientas de auxilio)
 Para corregir errores
 - Que hace: Son funciones administrativas para ajustar el sistema cuando algo sale mal en el dia a dia.
 - En Mexico: Se usa para cambiar "Cambiar de Fecha OP" y corregir "Movimiento de Almacen"
 
-## Implementacion menu Mantenimiento
+### Implementacion menu Mantenimiento
 En **mantenimiento_menu.xml** se establecen los contenedores o secciones principales.Se han ajustado las secuencias(sequence) para que los grupos aparezcan en el orden visual correcto.
 
 Y los otros archivos con el prefijo **mantenimiento_ ...** de acuerdo al arbol equivalente al excel proporcionado por los lideres de equipo.
 
-# OpenCode 
+
+
+## docker start
+```bash
+docker service docker start
+```
+## OpenCode 
 En el terminal 
 ```bash
 opencode auth login # escoger opencode go  , auntenticarse
 /models   #escoger Qwen3.6 similares
 /context add .  # agregando el contexto actual
+```
+
+### conexion a la base de datos postgresql migrada
+
+Para establecer la conexion se ejecuta **psql -h 100.119.5.108 -p 5432 -U postgres -d mxbdaje_local** o desde pgadmin con las mismas opciones, luego de lo cual se ingresaba la contraseña.
+
+Para que nuestro servicio odoo se conecte a dicha base de datos modificamos 
+```bash
+environment:
+      - HOST=100.119.5.108
+      - PORT=5432
+      - USER=postgres
+      - PASSWORD=051002
+```
+Y la configuracion **odoo.conf**
+```bash
+db_host = 100.119.5.108
+db_user = postgres
+db_password = 051002
+db_port = 5432
+admin_passwd = pass
+db_name = mxbdaje_local
+```
+
+Lo anterior debido a que en la imagen de la conexion, el "host/address" es 100.119.5.108.Se trata de una ip de tailscale (100.x.x.x) , pgadmin esta viajando por internet para conectarse con el ssd donde reside la base de datos migrada.
+
+Mientras que docker es tiene un alcance mas local.
+
+Hechas las modificaciones comprobamos que existe trafico entre el contenedor en wsl , para lo cual se ejecuta
+```bash
+# Prueba si el motor de Docker en WSL2 puede saltar a Tailscale
+docker run --rm alpine nc -zv 100.119.5.108 5432
+#comprobado lo anterior, levantar el servicio 
+docker compose up -d odoo
+# entrando al contenedor de manera interativa y comunicando con la base de datos
+docker exec -it odoo19-server-dev psql -h 100.119.5.108 -U postgres -d mxbdaje_local
+```
+
+Los comandos son exitosos, sin embargo el tiempo de conexion es infima e inestable.
+
+Esto obliga a obtener informacion especifica para el agente.
+
+
+### Para las pruebas no se usa la conexion a la base de datos  sino el servicio DB 
+Con las credenciales cofigurados en odoo.conf
+
+### Cargar program # 132 
+```bash
+Ahora reinicia el contenedor y actualiza el modulo:
+docker compose down && docker compose up -d
+Luego en la UI o por linea de comandos:
+docker exec -it <container_name> odoo-bin -u Production -d <tu_base_de_datos> --stop-after-init
+Si el error persiste, verifica que los archivos esten montados correctamente en el contenedor:
+docker exec <container_name> ls -la /mnt/extra-addons/Production/models/
+Los 3 archivos deben aparecer:
+```
+### Actualizar modulo de interes
+
+enviar cambios
+```bash
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+```
+
+### El agente arruina la ui para aprobacion de formulas
+El commit bueno
+```bash
+git log --oneline -n 10
+d249f7a (HEAD -> features/produccion-modelos-logica) termina querys para program # 132
+6c58334 completa querys solicitados por el agente
+5ae7912 rastrea a data_para_agente
+bf6cc96 concluye querys pra precisar la descripcion de program # 132
+9ffc6ef completa y comprueba Aprobacion de formulas program # 162  ← este es el commit bueno
+4f7afae agrega docu program 162
+ef0dfa1 (origin/features/produccion-algunos-modelos, features/produccion-algunos-modelos) completa las vistas
+f752462 (origin/prod_module, prod_module) Merge pull request #1 from FloresVillar/feature/mexico-menu-structure
+6eb2034 implementa menu Mantenimiento
+885d832 agrega documentacion
+```
+buscar diferencias
+
+```bash
+ git diff 9ffc6ef -- Pruebas/Production/views/mantenimiento_menu.xml
+diff --git a/Pruebas/Production/views/mantenimiento_menu.xml b/Pruebas/Production/views/mantenimiento_menu.xml
+index fc38591..e54c98b 100644
+--- a/Pruebas/Production/views/mantenimiento_menu.xml
++++ b/Pruebas/Production/views/mantenimiento_menu.xml
+@@ -24,9 +24,4 @@
+                     name="Reportes" 
+                     parent="mant_menu"
+                     sequence="40"/>
+-        <menuitem   id="mant_aprobacion_formulas_menu"
+-                        name="Aprobacion de Formulas"
+-                        parent="mant_menu"
+-                        action="action_formula_solicitud"
+-                        sequence="50"/>
+ </odoo>
+\ No newline at end of file
+esau@DESKTOP-A3RPEKP:~/TutorialOdoo$ git diff 9ffc6ef -- Pruebas/Production/views/program_162_formula_aprobacion.xml
+diff --git a/Pruebas/Production/views/program_162_formula_aprobacion.xml b/Pruebas/Production/views/program_162_formula_aprobacion.xml
+index c464817..e1b856f 100644
+--- a/Pruebas/Production/views/program_162_formula_aprobacion.xml
++++ b/Pruebas/Production/views/program_162_formula_aprobacion.xml
+@@ -210,9 +210,9 @@
+ 
+         <!-- MENU ITEMS (Configuracion bajo Mantenimiento) -->
+         <menuitem id="menu_formula_config"
+-                  name="Configuracion Formulas"
++                  name="Aprobacion de Formulas"
+                   parent="mant_menu"
+-                  sequence="60"/>
++                  sequence="50"/>
+ 
+         <menuitem id="menu_formula_aprobador_config"
+                   name="Aprobadores"
+```
+
+reestablecer esos archivos a ese commit
+
+```bash
+git checkout 9ffc6ef -- Pruebas/Production/views/mantenimiento_menu.xml
+git checkout 9ffc6ef -- Pruebas/Production/views/program_162_formula_aprobacion.xml
+```
+### Ejecucion sin bajar contenedores 
+
+```bash
+docker restart odoo19-server-dev
+docker exec -u root odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+```
+
+### Errores de conexion debido a wsl
+```bash
+wsl --shutdown
+```
+
+### Cambiar de plan a Build
+Usar tab →←
+
+---
+
+### Conversion de fechas julianas (AS/400) a fecha humana
+
+El sistema legacy Big Magic usa fechas julianas de 6 digitos con offset `730000` (estandar AS/400).
+
+**Formula de creacion:**
+```
+dias_desde_1_enero_del_anio_actual + 730000
+```
+Ej: 17 mayo 2026 → dia 137 del año → `137 + 730000 = 730137`
+
+**Conversion inversa (manual, paso a paso):**
+
+```text
+# Ejemplo: 739812
+1. 739812 - 730000 = 9812
+2. Ubicar el juliano del 1 enero del año implicado:
+   1 enero 2026 → juliano 739617
+3. 739812 - 739617 = 195  →  dia 195 del año
+4. Tabla de acumulados por mes:
+
+   | Fin de mes | Dia acumulado |
+   |---|---|
+   | Enero | 31 |
+   | Febrero | 59 |
+   | Marzo | 90 |
+   | Abril | 120 |
+   | Mayo | 151 |
+   | Junio | 181 |
+   | Julio | 212 |
+   | Agosto | 243 |
+   | Septiembre | 273 |
+   | Octubre | 304 |
+   | Noviembre | 334 |
+   | Diciembre | 365 |
+5. 195 entre 181 (fin junio) y 212 (fin julio) → JULIO
+   195 - 181 = 14 → dia 15
+6. Resultado: 15 de julio de 2026
+```
+
+**Conversion instantanea (terminal):**
+```bash
+python3 -c "from datetime import date, timedelta; print(date(1,1,1) + timedelta(days=739812 - 1))"
+# → 2026-07-15
+```
+
+**En SQL (PostgreSQL):**
+```sql
+SELECT date '0001-01-01' + (739812 - 1);
+-- → 2026-07-15
+```
+
+**En Odoo:** Los modelos ya incluyen campo computado `fecha_display` que hace la conversion automatica en la UI.
+
+### Resumen de los modelos (mantenimiento) implementados 
+Detalle en validaciones_analisis/borrador_consolidado.md
+
+### Resumen de ejecucion (primera vez)
+```bash
+# 1. Arrancar Docker (WSL2)
+sudo service docker start
+
+# 2. Levantar los contenedores (si no existen, los crea)
+cd ~/TutorialOdoo/Odoo-19-Develop
+docker compose up -d
+
+# 3. Crear la base de datos (solo si no existe)
+docker exec odoo19-db-dev psql -U chrizzzadmin -c "CREATE DATABASE odoo_aje;" 2>/dev/null || echo "BD ya existe, omitiendo..."
+
+# 4. Inicializar el modulo Production
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
+
+# 5. Acceder a Odoo: http://localhost:8070
+```
+
+### Resumen de ejecucion (reinicio con cambios en codigo)
+```bash
+docker restart odoo19-server-dev
+docker exec odoo19-server-dev odoo -u Production -d odoo_aje --stop-after-init
 ```

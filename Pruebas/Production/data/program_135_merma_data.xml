@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- MERMAS - CATEGORIA EMPAQUE (EMP) -->
+        <record id="merma_emp_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">EMP001</field>
+            <field name="descripcion">Poly Stretch</field>
+            <field name="categoria_global">EMP</field>
+            <field name="tipart_original">026</field>
+            <field name="porcentaje_estandar">13.85</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_emp_002" model="bm.ctl.produccion.merma">
+            <field name="codigo">EMP002</field>
+            <field name="descripcion">Separador de Carton</field>
+            <field name="categoria_global">EMP</field>
+            <field name="tipart_original">001</field>
+            <field name="porcentaje_estandar">16.91</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_emp_003" model="bm.ctl.produccion.merma">
+            <field name="codigo">EMP003</field>
+            <field name="descripcion">Bolsa de Polietileno</field>
+            <field name="categoria_global">EMP</field>
+            <field name="tipart_original">001</field>
+            <field name="porcentaje_estandar">16.91</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_emp_004" model="bm.ctl.produccion.merma">
+            <field name="codigo">EMP004</field>
+            <field name="descripcion">Caja Corrugado</field>
+            <field name="categoria_global">EMP</field>
+            <field name="tipart_original">001</field>
+            <field name="porcentaje_estandar">16.91</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_emp_005" model="bm.ctl.produccion.merma">
+            <field name="codigo">EMP005</field>
+            <field name="descripcion">Cinta Canela (Empacotecnia)</field>
+            <field name="categoria_global">EMP</field>
+            <field name="tipart_original">001</field>
+            <field name="porcentaje_estandar">16.91</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA ETIQUETADO (ETQ) -->
+        <record id="merma_etq_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">ETQ001</field>
+            <field name="descripcion">Etiqueta TAG RFID</field>
+            <field name="categoria_global">ETQ</field>
+            <field name="tipart_original">025</field>
+            <field name="porcentaje_estandar">16.34</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_etq_002" model="bm.ctl.produccion.merma">
+            <field name="codigo">ETQ002</field>
+            <field name="descripcion">Pegamento para Etiquetadora</field>
+            <field name="categoria_global">ETQ</field>
+            <field name="tipart_original">025</field>
+            <field name="porcentaje_estandar">16.34</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_etq_003" model="bm.ctl.produccion.merma">
+            <field name="codigo">ETQ003</field>
+            <field name="descripcion">Film Termoencogible 40cm</field>
+            <field name="categoria_global">ETQ</field>
+            <field name="tipart_original">026</field>
+            <field name="porcentaje_estandar">13.85</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_etq_004" model="bm.ctl.produccion.merma">
+            <field name="codigo">ETQ004</field>
+            <field name="descripcion">Film Termoencogible 46cm</field>
+            <field name="categoria_global">ETQ</field>
+            <field name="tipart_original">026</field>
+            <field name="porcentaje_estandar">13.85</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA LIQUIDOS (LIQ) -->
+        <record id="merma_liq_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ001</field>
+            <field name="descripcion">Agua Tratada para Envasado</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">005</field>
+            <field name="porcentaje_estandar">0.00</field>
+            <field name="recuperable">True</field>
+            <field name="afecta_costo">False</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_liq_002" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ002</field>
+            <field name="descripcion">Alta Fructosa 55</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">010</field>
+            <field name="porcentaje_estandar">241.02</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_liq_003" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ003</field>
+            <field name="descripcion">Azucar Liquida</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">010</field>
+            <field name="porcentaje_estandar">241.02</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_liq_004" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ004</field>
+            <field name="descripcion">Merma de Jarabe</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">003</field>
+            <field name="porcentaje_estandar">0.39</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_liq_005" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ005</field>
+            <field name="descripcion">Merma de Base Terminada</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">008</field>
+            <field name="porcentaje_estandar">4.65</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_liq_006" model="bm.ctl.produccion.merma">
+            <field name="codigo">LIQ006</field>
+            <field name="descripcion">Merma de Base Intermedia</field>
+            <field name="categoria_global">LIQ</field>
+            <field name="tipart_original">009</field>
+            <field name="porcentaje_estandar">0.68</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA INSUMOS (INS) -->
+        <record id="merma_ins_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">INS001</field>
+            <field name="descripcion">Acido Citrico</field>
+            <field name="categoria_global">INS</field>
+            <field name="tipart_original">008</field>
+            <field name="porcentaje_estandar">4.65</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_ins_002" model="bm.ctl.produccion.merma">
+            <field name="codigo">INS002</field>
+            <field name="descripcion">Benzoato de Sodio</field>
+            <field name="categoria_global">INS</field>
+            <field name="tipart_original">008</field>
+            <field name="porcentaje_estandar">4.65</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_ins_003" model="bm.ctl.produccion.merma">
+            <field name="codigo">INS003</field>
+            <field name="descripcion">Citrato de Sodio</field>
+            <field name="categoria_global">INS</field>
+            <field name="tipart_original">008</field>
+            <field name="porcentaje_estandar">4.65</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+        <record id="merma_ins_004" model="bm.ctl.produccion.merma">
+            <field name="codigo">INS004</field>
+            <field name="descripcion">Gas Carbonico</field>
+            <field name="categoria_global">INS</field>
+            <field name="tipart_original">008</field>
+            <field name="porcentaje_estandar">4.65</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA CALIDAD (CAL) -->
+        <record id="merma_cal_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">CAL001</field>
+            <field name="descripcion">Merma por Pruebas de Calidad</field>
+            <field name="categoria_global">CAL</field>
+            <field name="tipart_original"></field>
+            <field name="porcentaje_estandar">0.00</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA FORMATO (FOR) -->
+        <record id="merma_for_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">FOR001</field>
+            <field name="descripcion">Merma por Cambio de Formato</field>
+            <field name="categoria_global">FOR</field>
+            <field name="tipart_original"></field>
+            <field name="porcentaje_estandar">0.00</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+
+        <!-- MERMAS - CATEGORIA OTROS (OTR) -->
+        <record id="merma_otr_001" model="bm.ctl.produccion.merma">
+            <field name="codigo">OTR001</field>
+            <field name="descripcion">Otros</field>
+            <field name="categoria_global">OTR</field>
+            <field name="tipart_original"></field>
+            <field name="porcentaje_estandar">0.00</field>
+            <field name="recuperable">False</field>
+            <field name="afecta_costo">True</field>
+            <field name="activo">True</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_familia_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.familia.list</field>
+            <field name="model">bm.ctl.produccion.familia</field>
+            <field name="arch" type="xml">
+                <list string="Familias de Produccion por Sucursal" editable="bottom">
+                    <field name="sucursal_id"/>
+                    <field name="categoria_linea_id"/>
+                    <field name="activo"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_familia_form" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.familia.form</field>
+            <field name="model">bm.ctl.produccion.familia</field>
+            <field name="arch" type="xml">
+                <form string="Familia de Produccion" edit="true">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Configuracion">
+                                <field name="sucursal_id"/>
+                                <field name="categoria_linea_id"/>
+                                <field name="activo"/>
+                            </group>
+                            <group string="Auditoria">
+                                <field name="feccrea" readonly="1"/>
+                                <field name="horcrea" readonly="1"/>
+                                <field name="usucrea" readonly="1"/>
+                                <field name="fecultmod" readonly="1"/>
+                                <field name="horultmod" readonly="1"/>
+                                <field name="usuaulmod" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_familia_search" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.familia.search</field>
+            <field name="model">bm.ctl.produccion.familia</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Familias de Produccion">
+                    <field name="sucursal_id"/>
+                    <field name="categoria_linea_id"/>
+                    <separator/>
+                    <filter name="activos" string="Activos" domain="[('activo', '=', True)]"/>
+                    <filter name="inactivos" string="Inactivos" domain="[('activo', '=', False)]"/>
+                    <group>
+                        <filter name="grupo_sucursal" string="Sucursal" context="{'group_by': 'sucursal_id'}"/>
+                        <filter name="grupo_categoria" string="Categoria" context="{'group_by': 'categoria_linea_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_familia" model="ir.actions.act_window">
+            <field name="name">Familias de Produccion</field>
+            <field name="res_model">bm.ctl.produccion.familia</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Configura las familias de produccion por sucursal
+                </p>
+                <p>
+                    Activa o desactiva las categorias de lineas de produccion para cada sucursal operativa.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

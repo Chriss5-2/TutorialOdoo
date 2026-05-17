@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Procesos productivos iniciales para Mexico -->
+        <record id="proceso_soplado" model="bm.ctl.produccion.proceso">
+            <field name="codigo">SOP</field>
+            <field name="descripcion">Soplado</field>
+            <field name="secuencia">10</field>
+            <field name="categoria_linea_id" ref="categoria_002"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="proceso_jarabe" model="bm.ctl.produccion.proceso">
+            <field name="codigo">JAR</field>
+            <field name="descripcion">Preparacion de Jarabe</field>
+            <field name="secuencia">20</field>
+            <field name="categoria_linea_id" ref="categoria_003"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="proceso_bases" model="bm.ctl.produccion.proceso">
+            <field name="codigo">BAS</field>
+            <field name="descripcion">Preparacion de Bases</field>
+            <field name="secuencia">30</field>
+            <field name="categoria_linea_id" ref="categoria_008"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="proceso_llenado" model="bm.ctl.produccion.proceso">
+            <field name="codigo">LLE</field>
+            <field name="descripcion">Llenado / Envasado</field>
+            <field name="secuencia">40</field>
+            <field name="categoria_linea_id" ref="categoria_001"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="proceso_etiquetado" model="bm.ctl.produccion.proceso">
+            <field name="codigo">ETQ</field>
+            <field name="descripcion">Etiquetado</field>
+            <field name="secuencia">50</field>
+            <field name="categoria_linea_id" ref="categoria_025"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="proceso_empacado" model="bm.ctl.produccion.proceso">
+            <field name="codigo">EMP</field>
+            <field name="descripcion">Empacado</field>
+            <field name="secuencia">60</field>
+            <field name="categoria_linea_id" ref="categoria_021"/>
+            <field name="activo" eval="True"/>
+        </record>
+    </data>
+</odoo>
