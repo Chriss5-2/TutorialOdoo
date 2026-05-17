@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="prod_rep_progDiaria" name="XXX Programacion Diaria" parent="prod_reportes_menu" sequence="10" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_diarioProduccion" name="XXX Reporte Diario de Produccion" parent="prod_reportes_menu" sequence="20" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_diarioTipoProd" name="XXX Reporte Diario por Tipo de Prod" parent="prod_reportes_menu" sequence="30" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_progVsEjecutado" name="Reporte Programado vs Ejecutado" parent="prod_reportes_menu" sequence="40" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_porcentajeEjecucion" name="XXX Reporte porcentaje de Ejecucion" parent="prod_reportes_menu" sequence="50" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_formatoSabor" name="Produccion por formato y sabor" parent="prod_reportes_menu" sequence="60" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_formatoColor" name="XXX Produccion por formato y color" parent="prod_reportes_menu" sequence="70" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_consolidadoFormatoSabor" name="XXX Consolidado por formato y sabor 2" parent="prod_reportes_menu" sequence="80" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_mensual" name="Produccion Mensual" parent="prod_reportes_menu" sequence="90" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_diariaLitros" name="Produccion diaria en Litros" parent="prod_reportes_menu" sequence="100" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_mermasLiquido" name="XXX Reporte de mermas liquido" parent="prod_reportes_menu" sequence="110" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_mermasEnvasado" name="Reporte de mermas envasado" parent="prod_reportes_menu" sequence="120" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_mermasInsumos" name="Reporte de mermas insumos" parent="prod_reportes_menu" sequence="130" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_paradas" name="Reporte de Paradas" parent="prod_reportes_menu" sequence="140" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_estadisticasParadas" name="Reporte Estadisticas de Paradas" parent="prod_reportes_menu" sequence="150" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_eficiencia" name="Reporte de Indices de Eficiencia" parent="prod_reportes_menu" sequence="160" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_consumosMermas" name="Consumos/Mermas Acumuladas" parent="prod_reportes_menu" sequence="170" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_stockProceso" name="Stock en proceso" parent="prod_reportes_menu" sequence="180" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_reporteStock" name="XXX Reporte de Stock" parent="prod_reportes_menu" sequence="190" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_ordenesProduccion" name="Reporte Ordenes de Produccion" parent="prod_reportes_menu" sequence="200" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_analisisOP" name="Analisis de Ordenes de Produccion" parent="prod_reportes_menu" sequence="210" action="base.action_partner_form"/>
+</odoo>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="prod_rep_insumos_consultaReq" name="Consulta Requerimientos Insumos" parent="prod_rep_insumos_menu" sequence="10" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_insumos_consumos" name="Consumos de Insumos" parent="prod_rep_insumos_menu" sequence="20" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_insumos_rendimientos" name="Rendimientos Insumos Anual" parent="prod_rep_insumos_menu" sequence="30" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_insumos_mermas" name="Mermas y Diferencias insumos" parent="prod_rep_insumos_menu" sequence="40" action="base.action_partner_form"/>
+    <menuitem id="prod_rep_insumos_mermas2" name="Mermas y Diferencias insumos 2" parent="prod_rep_insumos_menu" sequence="50" action="base.action_partner_form"/>
+</odoo>

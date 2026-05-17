@@ -115,3 +115,10 @@ En **mantenimiento_menu.xml** se establecen los contenedores o secciones princip
 
 Y los otros archivos con el prefijo **mantenimiento_ ...** de acuerdo al arbol equivalente al excel proporcionado por los lideres de equipo.
 
+# OpenCode 
+En el terminal 
+```bash
+opencode auth login # escoger opencode go  , auntenticarse
+/models   #escoger Qwen3.6 similares
+/context add .  # agregando el contexto actual
+```

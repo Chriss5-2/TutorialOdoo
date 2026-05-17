@@ -11,6 +11,8 @@ _build/
 # compiled python files
 *.py[co]
 __pycache__/
+!__init__.py
+!__manifest__.py
 # setup.py egg_info
 *.egg-info
 # emacs backup files
@@ -59,6 +61,14 @@ postgres19_data/
 Odoo-test/
 
 Odoo-priv
-venv/
+venv*/
+.venv*/
 
- 
+#docs auxiliares
+aje_docs_simulacion
+Produccion_arbol_funciones.html
+BM-CTL-Produccion_Mexico.xlsx
+.opencode/
+bm_ctl_produccion.md
+convert_csv_to_md.py
+convertir_todo.py
