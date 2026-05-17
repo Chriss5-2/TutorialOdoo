@@ -260,3 +260,6 @@ docker exec -u root odoo19-server-dev odoo -u Production -d odoo_aje --stop-afte
 ```bash
 wsl --shutdown
 ```
+
+### Cambiar de plan a Build
+Usar tab →←
