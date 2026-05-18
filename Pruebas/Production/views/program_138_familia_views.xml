@@ -75,5 +75,9 @@
                 </p>
             </field>
         </record>
+
+        <!-- MENU ITEMS -->
+        <menuitem id="cost_cosSeVa_familiaProd" name="Familia de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="20" action="action_familia"/>
+        <menuitem id="menu_familia_produccion" name="Familia de Produccion" parent="mant_configuraciones_menu" action="action_familia" sequence="10"/>
     </data>
 </odoo>

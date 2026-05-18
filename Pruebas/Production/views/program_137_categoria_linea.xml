@@ -93,5 +93,9 @@
                 </p>
             </field>
         </record>
+
+        <!-- MENU ITEMS -->
+        <menuitem id="cost_cosSeVa_catLinea" name="Categoria Linea de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="10" action="action_categoria_linea"/>
+        <menuitem id="menu_mantenimiento_categorias_linea" name="Categorias de Lineas de Produccion" parent="mant_clasificadores_menu" action="action_categoria_linea" sequence="40"/>
     </data>
 </odoo>

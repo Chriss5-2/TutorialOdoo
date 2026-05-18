@@ -77,5 +77,8 @@
                   parent="mant_clasificadores_menu"
                   action="action_parada_definicion"
                   sequence="20"/>
+        <!-- MENU ITEM (bajo prod_ingParMermas_menu) -->
+        <menuitem id="prod_ing_paradas" name="Ingreso de Paradas" parent="prod_ingParMermas_menu" sequence="10" action="action_parada_definicion"/>
+
     </data>
 </odoo>

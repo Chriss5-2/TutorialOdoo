@@ -5,9 +5,4 @@
                 name="Turnos"
                 parent="mant_clasificadores_menu"
                 sequence="10"/>
-    <menuitem   id="menu_mantenimiento_categorias_linea"
-                name="Categorias de Lineas de Produccion"
-                parent="mant_clasificadores_menu"
-                action="action_categoria_linea"
-                sequence="40"/>
 </odoo>
