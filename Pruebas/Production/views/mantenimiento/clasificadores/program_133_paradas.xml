@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- PARADA DEFINICION list VIEW -->
+        <record id="view_parada_definicion_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.parada.list</field>
+            <field name="model">bm.ctl.produccion.parada</field>
+            <field name="arch" type="xml">
+                <list string="Catalogo de Tipos de Paradas" editable="bottom">
+                    <field name="codigo"/>
+                    <field name="descripcion"/>
+                    <field name="categoria_global"/>
+                    <field name="codigo_detalle"/>
+                    <field name="activo"/>
+                    <field name="tiempo_estimado"/>
+                    <field name="afecta_oee"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- PARADA DEFINICION FORM VIEW -->
+        <record id="view_parada_definicion_form" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.parada.form</field>
+            <field name="model">bm.ctl.produccion.parada</field>
+            <field name="arch" type="xml">
+                <form string="Definicion de Tipo de Parada" edit="true">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Informacion de Parada">
+                                <field name="codigo"/>
+                                <field name="descripcion"/>
+                                <field name="categoria_global"/>
+                                <field name="codigo_detalle"/>
+                                <field name="activo"/>
+                            </group>
+                            <group string="Configuracion">
+                                <field name="tiempo_estimado"/>
+                                <field name="afecta_oee"/>
+                            </group>
+                            <group string="Auditoria">
+                                <field name="feccrea" readonly="1"/>
+                                <field name="horcrea" readonly="1"/>
+                                <field name="usucrea" readonly="1"/>
+                                <field name="fecultmod" readonly="1"/>
+                                <field name="horultmod" readonly="1"/>
+                                <field name="usuaulmod" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- PARADA DEFINICION ACTION -->
+        <record id="action_parada_definicion" model="ir.actions.act_window">
+            <field name="name">Tipos de Paradas</field>
+            <field name="res_model">bm.ctl.produccion.parada</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea el catalogo de tipos de paradas de produccion
+                </p>
+                <p>
+                    Define los tipos de paradas (mecanica, electrica, operativa, etc.) para registro de tiempos muertos y calculo de OEE.
+                </p>
+            </field>
+        </record>
+
+        <!-- MENU ITEM (bajo mant_clasificadores_menu) -->
+        <menuitem id="menu_catalogo_paradas"
+                  name="Paradas"
+                  parent="mant_clasificadores_menu"
+                  action="action_parada_definicion"
+                  sequence="20"/>
+        <!-- MENU ITEM (bajo prod_ingParMermas_menu) -->
+        <menuitem id="prod_ing_paradas" name="Ingreso de Paradas" parent="prod_ingParMermas_menu" sequence="10" action="action_parada_definicion"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Action -->
+    <record id="action_aje_merma_registro" model="ir.actions.act_window">
+        <field name="name">Registro de Mermas</field>
+        <field name="res_model">bm.ctl.produccion.merma.registro</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'default_fecha': context_today()}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay registros de merma
+            </p>
+            <p>
+                Registre las mermas de produccion por orden de trabajo, insumo y tipo de merma.
+            </p>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_aje_merma_registro_list" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.registro.list</field>
+        <field name="model">bm.ctl.produccion.merma.registro</field>
+        <field name="arch" type="xml">
+            <list string="Registro de Mermas" editable="bottom" decoration-danger="porcentaje_merma &gt; 10" decoration-warning="porcentaje_merma &gt; 5">
+                <field name="fecha"/>
+                <field name="nroop"/>
+                <field name="tipo_merma_id"/>
+                <field name="insumo_codigo"/>
+                <field name="insumo_descripcion"/>
+                <field name="linea"/>
+                <field name="turno"/>
+                <field name="cantidad_std"/>
+                <field name="cantidad_real"/>
+                <field name="cantidad_merma"/>
+                <field name="porcentaje_merma"/>
+                <field name="costo_estandar"/>
+                <field name="costo_merma"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_aje_merma_registro_form" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.registro.form</field>
+        <field name="model">bm.ctl.produccion.merma.registro</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Merma">
+                <header>
+                    <button name="action_save_and_close" string="Guardar y Cerrar" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Informacion General">
+                            <field name="fecha"/>
+                            <field name="nroop"/>
+                            <field name="tipo_merma_id"/>
+                            <field name="insumo_codigo"/>
+                            <field name="insumo_descripcion"/>
+                            <field name="linea"/>
+                            <field name="turno"/>
+                        </group>
+                        <group string="Cantidades">
+                            <field name="cantidad_std"/>
+                            <field name="cantidad_real"/>
+                            <field name="cantidad_merma"/>
+                            <field name="porcentaje_merma"/>
+                        </group>
+                        <group string="Costos">
+                            <field name="costo_estandar"/>
+                            <field name="costo_merma"/>
+                        </group>
+                    </group>
+                    <group string="Observaciones">
+                        <field name="observaciones" nolabel="1"/>
+                    </group>
+                    <group string="Auditoria" groups="base.group_no_one">
+                        <group>
+                            <field name="feccrea"/>
+                            <field name="horcrea"/>
+                            <field name="usucrea"/>
+                        </group>
+                        <group>
+                            <field name="fecultmod"/>
+                            <field name="horultmod"/>
+                            <field name="usuaulmod"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_aje_merma_registro_search" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.registro.search</field>
+        <field name="model">bm.ctl.produccion.merma.registro</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Hoy" name="hoy" domain="[('fecha', '=', context_today())]"/>
+                <filter string="Esta Semana" name="semana" domain="[('fecha', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este Mes" name="mes" domain="[('fecha', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Merma Alta (&gt;10%)" name="merma_alta" domain="[('porcentaje_merma', '&gt;', 10)]"/>
+                <filter string="Con Costo" name="con_costo" domain="[('costo_merma', '&gt;', 0)]"/>
+                <group>
+                    <filter string="Tipo de Merma" name="group_tipo" context="{'group_by': 'tipo_merma_id'}"/>
+                    <filter string="OP" name="group_op" context="{'group_by': 'nroop'}"/>
+                    <filter string="Fecha" name="group_fecha" context="{'group_by': 'fecha'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- MENU ITEM -->
+    <menuitem id="menu_prod_ingreso_mermas"
+              name="Ingreso de Mermas"
+              parent="prod_ingParMermas_menu"
+              action="action_aje_merma_registro"
+              sequence="10"/>
+</odoo>

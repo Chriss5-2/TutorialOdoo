@@ -29,8 +29,9 @@ services:
         condition: service_healthy
     environment:
       - HOST=myDB19
+      - PORT=5432
       - USER=chrizzzadmin
-      - PASSWORD=051002
+      - PASSWORD=051002 
     # El comando ahora refleja exactamente lo que hacías en local
     #command: >
     #  odoo -d odoo-19-db
@@ -42,9 +43,9 @@ services:
       - ../Odoo-priv:/mnt/odoo-priv
       - ../tutorials:/mnt/tutorials
       - ../Pruebas:/mnt/Pruebas
-      - ../config/odoo.conf:/etc/odoo/odoo.conf
+      - ../config/odoo.conf:/etc/odoo/odoo.conf:ro
       - ./odoo_data:/var/lib/odoo
-
+    
   pdAdmin:
     image: dpage/pgadmin4
     container_name: pgadmin4-v19-dev

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Action -->
+    <record id="action_aje_mermas" model="ir.actions.act_window">
+        <field name="name">Tipos de Mermas</field>
+        <field name="res_model">bm.ctl.produccion.merma</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'default_activo': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay tipos de merma configurados
+            </p>
+            <p>
+                Configure los tipos de mermas de produccion para clasificar las perdidas por categoria.
+            </p>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_aje_merma_tree" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.list</field>
+        <field name="model">bm.ctl.produccion.merma</field>
+        <field name="arch" type="xml">
+            <list string="Tipos de Mermas" editable="bottom">
+                <field name="codigo"/>
+                <field name="descripcion"/>
+                <field name="categoria_global"/>
+                <field name="tipart_original"/>
+                <field name="porcentaje_estandar"/>
+                <field name="recuperable"/>
+                <field name="afecta_costo"/>
+                <field name="activo"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_aje_merma_form" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.form</field>
+        <field name="model">bm.ctl.produccion.merma</field>
+        <field name="arch" type="xml">
+            <form string="Tipo de Merma">
+                <header>
+                    <button name="action_save_and_close" string="Guardar y Cerrar" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Informacion General">
+                            <field name="codigo"/>
+                            <field name="descripcion"/>
+                            <field name="categoria_global"/>
+                            <field name="tipart_original"/>
+                        </group>
+                        <group string="Configuracion">
+                            <field name="porcentaje_estandar"/>
+                            <field name="recuperable"/>
+                            <field name="afecta_costo"/>
+                            <field name="activo"/>
+                        </group>
+                    </group>
+                    <group string="Auditoria" groups="base.group_no_one">
+                        <group>
+                            <field name="feccrea"/>
+                            <field name="horcrea"/>
+                            <field name="usucrea"/>
+                        </group>
+                        <group>
+                            <field name="fecultmod"/>
+                            <field name="horultmod"/>
+                            <field name="usuaulmod"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_aje_merma_search" model="ir.ui.view">
+        <field name="name">bm.ctl.produccion.merma.search</field>
+        <field name="model">bm.ctl.produccion.merma</field>
+        <field name="arch" type="xml">
+            <search string="Busqueda de Mermas">
+                <field name="codigo"/>
+                <field name="descripcion"/>
+                <field name="categoria_global"/>
+                <separator/>
+                <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                <filter string="Recuperables" name="recuperables" domain="[('recuperable', '=', True)]"/>
+                <group>
+                    <filter string="Categoria" name="group_categoria" context="{'group_by': 'categoria_global'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- MENU ITEM (bajo mant_clasificadores_menu) -->
+    <menuitem id="menu_mantenimiento_mermas"
+              name="Mermas"
+              parent="mant_clasificadores_menu"
+              action="action_aje_mermas"
+              sequence="30"/>
+</odoo>
