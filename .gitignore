@@ -65,6 +65,8 @@ venv*/
 .venv*/
 
 #docs auxiliares  
+01_Docs_Oficiales/
+aje_docs_simulacion
 .opencode/ 
 convert_csv_to_md.py
 convertir_todo.py
