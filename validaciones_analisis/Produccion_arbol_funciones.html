@@ -1,0 +1,1343 @@
+
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Jerarquía de Menús - Exportación</title>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <style>
+            body { background-color: #0d1117; color: #c9d1d9; margin: 0; font-family: sans-serif; overflow: hidden; }
+            .link { fill: none; stroke: #444c56; stroke-width: 1.5px; opacity: 0.6; }
+            .node circle { fill: #58a6ff; stroke: #30363d; stroke-width: 1.5px; }
+            .node--internal circle { fill: #f78166; }
+            /* Nueva clase para nodos NO permitidos en México */
+            .node--no-mexico circle { fill: #ff0000 !important; stroke: #ffffff; stroke-width: 2px; }
+            .node--no-mexico text { fill: #ff6666; font-weight: bold; }
+
+            .node text { font-size: 11px; fill: #adbac7; cursor: default; }
+            svg { width: 100vw; height: 100vh; cursor: move; }
+            .ui { position: absolute; top: 20px; left: 20px; background: rgba(22, 27, 34, 0.9);
+                   padding: 15px; border: 1px solid #30363d; border-radius: 6px; pointer-events: none; }
+        </style>
+    </head>
+    <body>
+        <div class="ui">
+            <strong style="color: #f78166;">Naranja: Menús</strong> |
+            <strong style="color: #58a6ff;">Azul: Programas</strong> |
+            <strong style="color: #ff0000;">Rojo: No México</strong><br>
+            <small style="opacity: 0.7;">Usa el scroll para Zoom y arrastra para mover</small>
+        </div>
+        <svg id="canvas"></svg>
+
+        <script>
+            const data = {
+  "name": "Menu Principal",
+  "tipo": "Menu",
+  "mexico": "",
+  "children": [
+    {
+      "name": "Mantenimiento",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Clasificadores",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Turnos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Paradas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Mermas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Categorias de Lineas de Produccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Configuraciones",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Familia de Produccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Configura Procesos Productivos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Motivos de Anulacion OP",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Mantenimiento de Fases",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "X Parametros para Max y Min",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Codigo de Barras",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Configuracion de Puntos de Lectura",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "Estados de Etiqueta",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "Tipo de Tarima",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Tipo de Etiqueta",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Tipo de Carton",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "Configuracion Etiqueta",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Configuracion de Tarima/Palet",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Configuracion LINEA",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Vida Util por SKU",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Autorizacion de Eliminacion",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            },
+            {
+              "name": "Asigna Personas a Areas Mant",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Conf Almacenes en Procesos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Configuracion SKU - Maquila",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Motivo de Uso de Sustituto",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tarifas de Soplado",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Aprobacion de Formulas",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Consultas",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Fechas de Vencimiento de Articulos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Maestro de Articulos",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Reportes",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Productos Terminados vs Materiales",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Materiales vs Productos Terminados",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Planeamiento",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Mantenimiento",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Ritmo de Tanques",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Capacidad por Lineas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Moldes para Formatos",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Almacenes para Planeamiento",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "AVAIL",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Mantenimiento de Mapeos Sucusales",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Lanzar OProduccion AVAIL",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            },
+            {
+              "name": "XXX(CADENA) Mant de Formulas STD",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Produccion",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Lanzar Orden de Produccion",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Liquidar Orden de Produccion",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Proceso de Fabricacion",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Ingreso de Paradas y Mermas",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Resumen Produccion vs Paradas",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Ingreso de Valor de Horas Directas",
+          "tipo": "Menu",
+          "mexico": "SI"
+        },
+        {
+          "name": "Reporteria Paradas",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Asignacion de Paradas",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Reportes",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "XXX Programacion Diaria",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Reporte Diario de Produccion (Nuevo)",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Reporte Diario de Prod por Tipo de P",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte Programado vs. Ejecutado",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Reporte porcentaje de Ejecucion por",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Produccion por formato y sabor",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Produccion por formato y color",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Consolidado por formato y sabor 2",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Produccion Mensual",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Produccion diaria en Litros",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Produccion de Jarabes",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Produccion por Sabor Jarabe",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Produccion por Sabor Jarabe por Linea F",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            },
+            {
+              "name": "XXX Reporte de mermas liquido",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte de mermas envasado",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte de mermas insumos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte de Paradas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte Estadisticas de Paradas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte de Indices de Eficiencia",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Insumos",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Consulta Requerimiento Insumos",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Consumos de Insumos",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Rendimientos Insumos Anual",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Mermas y Diferencias insumos",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Mermas y Diferencias insumos 2",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            },
+            {
+              "name": "Consumos/Mermas Acumuladas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Stock en proceso",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Reporte de Stock",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Reporte Ordenes de Produccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Analisis de Ordenes de Produccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Codigo de Barras",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Proceso de Fabricacion",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Envio de OP a Xadis",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Cerrar Asignacion Orden Produccion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Asignacion Linea de Fab. Operador",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Autorizacion de Eliminacion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Generacion Etiqueta Cod. Barras",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Recepci\u00c2\u00a2n / Lectura de Etique",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Consultar Etiquetas por Orden Produccion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Etiqueta CodBarra Preformas",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Codigo de Barras (CO)",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Asignacion Lin Fab. Operador",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Autorizacion de Eliminacion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Cerrar Asignacion O/Produccion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Recepci\u00c2\u00a2n / Lectura de Etique",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Consulta Etiquetas",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Anulacion de ETQ en bloque",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Tiempos de Produccion",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Mantenimiento de Paradas",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Mantenimiento de Tipo de Falla",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Tiempos de Produccion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Planeacion de Turno",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Aprobaciones",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Cierre de Turno",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Resumen de Turno",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Hoja Viajera de Produccion",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Codigo de Barras - XADIS",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Envio de OP a Xadis",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Consulta Proceso Productivo",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Genera datos para OEE",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Apertura y Cierre de Periodos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Registro de Horas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tiempo de Paradas sin OP",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Ajuste de Tiempos Fin de Mes",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Paradas vs Tiempo Disponible",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tablas Codigo Global",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tablas Codigo Detalle",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Paradas vs Codigo Detalle",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "XXX Traslada Informacion para OEE",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Configura Codigo de Linea",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Categoria de Insumos",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Asignar Categoria de Insumos",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Tipo de Cambio Global",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Reporteria Mermas",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Categoria de Insumos",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Asignar Categoria de Insumos",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Tipo Cambios Corporativo",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Consultas",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Consulta Ordenes de Produccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Resumen de OP por fecha",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Consultas Paradas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Consultas Mermas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Hoja de Costos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Productos en Cuarentena",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Consulta Cuarentena",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Ing./Sal. - Produccion Vs Inventario",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Control de Calidad",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Accesos a Funciones Calidad",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "XXX Trabajo con Protocolo",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Aprobar  Protocolos",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "XXX Trabajo Sin Protocolo",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Aprobacion de Ingresos",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Mantenimiento",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Plan de Inspeccion",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tipos de Inspeccion",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Tipo de Prueba",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Reportes",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "Consulta de Aprobaciones",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Fecha de Vencimiento",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Resinas",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Pruebas por Producto",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Productos No Conforme",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Costos",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Mantenimiento",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Tipo de Gastos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Centros de Costos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Niveles de costeo",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Consumos Indirectos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Mantenimiento Grupos SIG",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Mantenimiento Configuracion Cuentas",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Mant. Cubo Costo Sig",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "Precios STD",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Juego de Costos",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Gastos Indirectos",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Hoja de Costos",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Simulador de Costos",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Simulaciones",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Costos Estimados",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Factores de Gastos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Distribucion de Gastos",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Costo Estandar",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Lista de Precios C Estandar",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Canasta de Insumos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Mantenimiento Agrupacion COGS",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Clasificacion de COGS",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Tablas",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Validaci\u00c2\u00a2n HC vs STD",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "HOJAS DE COSTO - CAB Y DET",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "TABLAS LISTA DE PRECIOS",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "EXPLOSION VAL CABECER",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "CABSTDPRO/DETSTDPRO",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "CONXSKU",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "Reporte cts cogs vs cta distib",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "CONXARLINEA",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Costo SemiVariable",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Variables de Produccion",
+              "tipo": "Menu",
+              "mexico": "SI",
+              "children": [
+                {
+                  "name": "Categoria de Linea de Produccion",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                },
+                {
+                  "name": "Mantenimiento de Head Count",
+                  "tipo": "Program",
+                  "mexico": "NO"
+                },
+                {
+                  "name": "Valores Semi Variables",
+                  "tipo": "Program",
+                  "mexico": "SI"
+                }
+              ]
+            },
+            {
+              "name": "Configuracion Tabla COGS SKUC30L",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "DOLARIZACION",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "Gastos Indirectos",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Hoja de costos",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        },
+        {
+          "name": "Reportes",
+          "tipo": "Menu",
+          "mexico": "SI",
+          "children": [
+            {
+              "name": "ABC Consumos de insumos por OP",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Total produccion por hoja de costo",
+              "tipo": "Program",
+              "mexico": "SI"
+            },
+            {
+              "name": "Valorizacion Formula mes",
+              "tipo": "Program",
+              "mexico": "SI"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Formulas",
+      "tipo": "Menu",
+      "mexico": "NO",
+      "children": [
+        {
+          "name": "Configuracion de Aprobadores",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Solicitud Actualiza Formulas",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "Aprobaciones Masivas Formulas",
+          "tipo": "Program",
+          "mexico": "SI"
+        }
+      ]
+    },
+    {
+      "name": "Costeo - Batch",
+      "tipo": "Menu",
+      "mexico": "NO",
+      "children": [
+        {
+          "name": "Costeo por Compania",
+          "tipo": "Program",
+          "mexico": "NO"
+        }
+      ]
+    },
+    {
+      "name": "SIG Logistica",
+      "tipo": "Menu",
+      "mexico": "NO",
+      "children": [
+        {
+          "name": "Mantenimiento",
+          "tipo": "Menu",
+          "mexico": "NO"
+        },
+        {
+          "name": "Consumos de Insumos",
+          "tipo": "Program",
+          "mexico": "NO"
+        }
+      ]
+    },
+    {
+      "name": "Utils",
+      "tipo": "Menu",
+      "mexico": "SI",
+      "children": [
+        {
+          "name": "Cambiar de Fecha OP",
+          "tipo": "Program",
+          "mexico": "SI"
+        },
+        {
+          "name": "MOVIMIENTOS ALMACEN",
+          "tipo": "Program",
+          "mexico": "SI"
+        }
+      ]
+    },
+    {
+      "name": "Ayudas Sistemas",
+      "tipo": "Menu",
+      "mexico": "NO"
+    },
+    {
+      "name": "Codigo de Barras",
+      "tipo": "Menu",
+      "mexico": "NO",
+      "children": [
+        {
+          "name": "Lanzar OProduccion",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Proceso de Fabricacion",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Envio de OP a Xadis",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Cerrar Asignacion O/Produccion",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Asignacion Lin Fab. Operador",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Autorizacion de Eliminacion",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Generacion Etiquetas",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Recepci\u00c2\u00a2n / Lectura de Etique",
+          "tipo": "Program",
+          "mexico": "NO"
+        }
+      ]
+    },
+    {
+      "name": "Ayudas Sistema",
+      "tipo": "Menu",
+      "mexico": "NO",
+      "children": [
+        {
+          "name": "MOVIMIENTOS ALMACEN",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "5Costo de Produccion por Fami",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Reporte produccion vs hoja cos",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Cambiar de Fecha OP",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Startprogramm",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "CEstandar",
+          "tipo": "Menu",
+          "mexico": "NO",
+          "children": [
+            {
+              "name": "HOJAS DE COSTO - CAB Y DET",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "TABLAS LISTA DE PRECIOS",
+              "tipo": "Program",
+              "mexico": "NO"
+            },
+            {
+              "name": "EXPLOSION VAL CABECER",
+              "tipo": "Program",
+              "mexico": "NO"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Nuevas FORFAB",
+          "tipo": "Program",
+          "mexico": "NO"
+        },
+        {
+          "name": "Mantenimiento de Formulas",
+          "tipo": "Program",
+          "mexico": "NO"
+        }
+      ]
+    }
+  ]
+};
+            const svg = d3.select("#canvas");
+            const g = svg.append("g");
+
+            svg.call(d3.zoom().scaleExtent([0.1, 3]).on("zoom", (e) => g.attr("transform", e.transform)));
+
+            const tree = d3.tree().nodeSize([25, 300]);
+            const root = d3.hierarchy(data);
+            tree(root);
+
+            g.selectAll(".link")
+                .data(root.links())
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("d", d3.linkHorizontal().x(d => d.y).y(d => d.x));
+
+            const node = g.selectAll(".node")
+                .data(root.descendants())
+                .enter().append("g")
+                .attr("class", d => {
+                    let cls = "node " + (d.children ? "node--internal" : "node--leaf");
+                    // Aplicar clase roja si mexico === 'NO'
+                    if (d.data.mexico === "NO") cls += " node--no-mexico";
+                    return cls;
+                })
+                .attr("transform", d => `translate(${d.y}, ${d.x})`);
+
+            node.append("circle").attr("r", 5);
+            node.append("text")
+                .attr("dy", "0.31em")
+                .attr("x", d => d.children ? -10 : 10)
+                .attr("text-anchor", d => d.children ? "end" : "start")
+                .text(d => d.data.name);
+
+            svg.call(d3.zoom().transform, d3.zoomIdentity.translate(150, window.innerHeight/2).scale(0.7));
+        </script>
+    </body>
+    </html>
+    

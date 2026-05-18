@@ -64,18 +64,13 @@ Odoo-priv
 venv*/
 .venv*/
 
-#docs auxiliares
-aje_docs_simulacion
-Produccion_arbol_funciones.html
-BM-CTL-Produccion_Mexico.xlsx
-.opencode/
-bm_ctl_produccion.md
+#docs auxiliares  
+.opencode/ 
 convert_csv_to_md.py
 convertir_todo.py
 scripts_para_agente/
 historial_agente/ 
 imagenes/
 AGENTS.md
-TECH_NOTES.md
-BM-CTL-Produccion_Mexico.csv
+TECH_NOTES.md 
 image.png
