@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- TODO: reemplazar por action="action_aje_familia_produccion"-->
-    <menuitem   id="menu_familia_produccion"
-                name="Familia de Produccion"
-                parent="mant_configuraciones_menu"
-                action="base.action_partner_form"
-                sequence="10"/>
     <menuitem   id="menu_configura_procesos"
                 name="Configura Procesos Productivos"
                 parent="mant_configuraciones_menu"

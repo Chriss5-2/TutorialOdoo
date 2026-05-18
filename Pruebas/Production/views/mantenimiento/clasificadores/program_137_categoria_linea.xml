@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- CATEGORIA LINEA LIST VIEW -->
+        <record id="view_categoria_linea_list" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.categoria.linea.list</field>
+            <field name="model">bm.ctl.produccion.categoria.linea</field>
+            <field name="arch" type="xml">
+                <list string="Catalogo de Categorias de Lineas" editable="bottom">
+                    <field name="efamilia"/>
+                    <field name="descripcion"/>
+                    <field name="area"/>
+                    <field name="factor"/>
+                    <field name="funcion"/>
+                    <field name="almproc"/>
+                    <field name="activo"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- CATEGORIA LINEA FORM VIEW -->
+        <record id="view_categoria_linea_form" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.categoria.linea.form</field>
+            <field name="model">bm.ctl.produccion.categoria.linea</field>
+            <field name="arch" type="xml">
+                <form string="Categoria de Linea de Produccion" edit="true">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Informacion de Categoria">
+                                <field name="efamilia"/>
+                                <field name="descripcion"/>
+                                <field name="area"/>
+                                <field name="activo"/>
+                            </group>
+                            <group string="Configuracion">
+                                <field name="factor"/>
+                                <field name="funcion"/>
+                                <field name="almproc"/>
+                            </group>
+                            <group string="Auditoria">
+                                <field name="feccrea" readonly="1"/>
+                                <field name="horcrea" readonly="1"/>
+                                <field name="usucrea" readonly="1"/>
+                                <field name="fecultmod" readonly="1"/>
+                                <field name="horultmod" readonly="1"/>
+                                <field name="usuaulmod" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- CATEGORIA LINEA SEARCH VIEW -->
+        <record id="view_categoria_linea_search" model="ir.ui.view">
+            <field name="name">bm.ctl.produccion.categoria.linea.search</field>
+            <field name="model">bm.ctl.produccion.categoria.linea</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Categorias de Lineas">
+                    <field name="efamilia"/>
+                    <field name="descripcion"/>
+                    <field name="area"/>
+                    <separator/>
+                    <filter name="activos" string="Activos" domain="[('activo', '=', True)]"/>
+                    <filter name="inactivos" string="Inactivos" domain="[('activo', '=', False)]"/>
+                    <group>
+                        <filter name="grupo_factor" string="Factor" context="{'group_by': 'factor'}"/>
+                        <filter name="grupo_funcion" string="Funcion" context="{'group_by': 'funcion'}"/>
+                        <filter name="grupo_area" string="Area" context="{'group_by': 'area'}"/>
+                        <filter name="grupo_almproc" string="Almacen" context="{'group_by': 'almproc'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- CATEGORIA LINEA ACTION -->
+        <record id="action_categoria_linea" model="ir.actions.act_window">
+            <field name="name">Categorias de Lineas</field>
+            <field name="res_model">bm.ctl.produccion.categoria.linea</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea el catalogo de categorias de lineas de produccion
+                </p>
+                <p>
+                    Define las categorias para clasificar lineas de produccion (Envasado, Soplado, Jarabe, Etiquetas, etc.)
+                    y agruparlas para reportes de capacidad, eficiencia y costos.
+                </p>
+            </field>
+        </record>
+
+        <!-- MENU ITEMS -->
+        <menuitem id="cost_cosSeVa_catLinea" name="Categoria Linea de Produccion" parent="cost_costSeVa_varProduccion_menu" sequence="10" action="action_categoria_linea"/>
+        <menuitem id="menu_mantenimiento_categorias_linea" name="Categorias de Lineas de Produccion" parent="mant_clasificadores_menu" action="action_categoria_linea" sequence="40"/>
+    </data>
+</odoo>

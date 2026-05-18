@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sucursal 0001 — 4 familias -->
+        <record id="familia_0001_001" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0001"/>
+            <field name="categoria_linea_id" ref="categoria_001"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0001_003" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0001"/>
+            <field name="categoria_linea_id" ref="categoria_003"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0001_019" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0001"/>
+            <field name="categoria_linea_id" ref="categoria_019"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0001_021" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0001"/>
+            <field name="categoria_linea_id" ref="categoria_021"/>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <!-- Sucursal 0068 — 4 familias -->
+        <record id="familia_0068_001" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0068"/>
+            <field name="categoria_linea_id" ref="categoria_001"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0068_003" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0068"/>
+            <field name="categoria_linea_id" ref="categoria_003"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0068_019" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0068"/>
+            <field name="categoria_linea_id" ref="categoria_019"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0068_021" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0068"/>
+            <field name="categoria_linea_id" ref="categoria_021"/>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <!-- Sucursal 0070 — 4 familias -->
+        <record id="familia_0070_001" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0070"/>
+            <field name="categoria_linea_id" ref="categoria_001"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0070_003" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0070"/>
+            <field name="categoria_linea_id" ref="categoria_003"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0070_019" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0070"/>
+            <field name="categoria_linea_id" ref="categoria_019"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0070_021" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0070"/>
+            <field name="categoria_linea_id" ref="categoria_021"/>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <!-- Sucursal 0108 — 4 familias -->
+        <record id="familia_0108_001" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0108"/>
+            <field name="categoria_linea_id" ref="categoria_001"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0108_003" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0108"/>
+            <field name="categoria_linea_id" ref="categoria_003"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0108_019" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0108"/>
+            <field name="categoria_linea_id" ref="categoria_019"/>
+            <field name="activo" eval="True"/>
+        </record>
+        <record id="familia_0108_021" model="bm.ctl.produccion.familia">
+            <field name="sucursal_id" ref="sucursal_0108"/>
+            <field name="categoria_linea_id" ref="categoria_021"/>
+            <field name="activo" eval="True"/>
+        </record>
+    </data>
+</odoo>

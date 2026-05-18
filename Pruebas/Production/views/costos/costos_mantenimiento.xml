@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="cost_mant_tiposGastos" name="Tipos de Gastos" parent="cost_mantenimiento_menu" sequence="10" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_centrosCosto" name="Centros de Costo" parent="cost_mantenimiento_menu" sequence="20" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_nivelesCosto" name="Niveles de Costo" parent="cost_mantenimiento_menu" sequence="30" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_consumosIndirectos" name="Consumos Indirectos" parent="cost_mantenimiento_menu" sequence="40" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_gruposSIG" name="Mantenimiento Grupos SIG" parent="cost_mantenimiento_menu" sequence="50" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_configCuentas" name="Mantenimiento Configuracion Cuentas" parent="cost_mantenimiento_menu" sequence="60" action="base.action_partner_form"/>
+    <menuitem id="cost_mant_preciosSTD" name="Precios STD" parent="cost_mantenimiento_menu" sequence="70" action="base.action_partner_form"/>
+</odoo>

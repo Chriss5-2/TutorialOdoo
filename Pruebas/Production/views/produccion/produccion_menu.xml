@@ -4,7 +4,7 @@
         <menuitem id="prod_lanzarOP_menu" name="Lanzar Orden de Produccion" parent="prod_menu" sequence="10" action="base.action_partner_form"/>
         <menuitem id="prod_liquidarOP_menu" name="Liquidar Orden de Produccion" parent="prod_menu" sequence="20" action="base.action_partner_form"/>
         <menuitem id="prod_procesoFab_menu" name="Proceso de Fabricacion" parent="prod_menu" sequence="30" action="base.action_partner_form"/>
-        <menuitem id="prod_ingParMermas_menu" name="Ingreso de Paradas y Mermas" parent="prod_menu" sequence="40" action="base.action_partner_form"/>
+        <menuitem id="prod_ingParMermas_menu" name="Ingreso de Paradas y Mermas" parent="prod_menu" sequence="40"/>
         <menuitem id="prod_prodVSparadas_menu" name="Resumen Produccion vs Paradas" parent="prod_menu" sequence="50" action="base.action_partner_form"/>
         <menuitem id="prod_ingValorHrs_menu" name="Ingreso de Valor de Horas Directas" parent="prod_menu" sequence="60" action="base.action_partner_form"/>
 

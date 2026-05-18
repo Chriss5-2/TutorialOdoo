@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="utils_menu" name="Utils" parent="production_menu_root" sequence="50"/>
+        <menuitem id="utils_cambiarFechaOP" name="Cambiar de Fecha OP" parent="utils_menu" sequence="10" action="base.action_partner_form"/>
+        <menuitem id="utils_movimientosAlmacen" name="Movimientos Almacen" parent="utils_menu" sequence="20" action="base.action_partner_form"/>
+</odoo>
