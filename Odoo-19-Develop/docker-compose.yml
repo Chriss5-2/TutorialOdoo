@@ -43,7 +43,7 @@ services:
       - ../Odoo-priv:/mnt/odoo-priv
       - ../tutorials:/mnt/tutorials
       - ../Pruebas:/mnt/Pruebas
-      - ../config/odoo.conf:/etc/odoo/odoo.conf
+      - ../config/odoo.conf:/etc/odoo/odoo.conf:ro
       - ./odoo_data:/var/lib/odoo
     
   pdAdmin:
